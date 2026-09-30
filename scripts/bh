@@ -1,0 +1,3 @@
+#!/bin/bash
+# bh: the short form of ./scripts/bulkhead.
+exec "$(dirname "$0")/bulkhead" "$@"

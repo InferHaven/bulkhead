@@ -21,7 +21,7 @@ if [ -n "${HAVEN_EXTRA_USERS:-}" ]; then
   done
 fi
 
-echo "[InferHaven] Initializing workspace..."
+echo "[Bulkhead] Initializing workspace..."
 
 # ── Shared tmpfs cache dir (status bar + popup + model cache) ───────────────
 # /run is tmpfs and owned by root. Pre-create /run/haven world-writable with
@@ -36,9 +36,9 @@ chmod 1777 /run/haven
 if mountpoint -q /home 2>/dev/null \
    && [ ! -d "${HOME_DIR}" ] \
    && { [ -f /home/.zshrc ] || [ -d /home/.config ] || [ -d /home/.haven ]; }; then
-  echo "[InferHaven] Detected legacy volume layout — running haven-migrate-home..."
+  echo "[Bulkhead] Detected legacy volume layout — running haven-migrate-home..."
   /usr/local/bin/haven-migrate-home || \
-    echo "[InferHaven] Migration script returned non-zero — see /home/.migrate-home-staging."
+    echo "[Bulkhead] Migration script returned non-zero — see /home/.migrate-home-staging."
 fi
 
 # ── Sentinel: cold vs warm boot detection ────────────────────────────────────
@@ -52,11 +52,11 @@ elif [ "$(stat -c %U "${HOME_DIR}/.local" 2>/dev/null || echo missing)" != "${HA
   _cold_reason="ownership drift on ${HOME_DIR}/.local"
 else
   _warm_boot=1
-  echo "[InferHaven] Warm boot — sentinel + ownership ok, skipping full chown."
+  echo "[Bulkhead] Warm boot — sentinel + ownership ok, skipping full chown."
 fi
 
 if [ "${_warm_boot}" -eq 0 ]; then
-  echo "[InferHaven] Cold boot — ${_cold_reason}; running first-time setup..."
+  echo "[Bulkhead] Cold boot — ${_cold_reason}; running first-time setup..."
   # -R can race transient files (e.g. a zsh .zcompdump*.lock appearing then
   # vanishing mid-sweep) → ENOENT. Tolerate it so set -e doesn't abort the
   # entrypoint and exit the container. Matches the projects/.npm-global sweeps.
@@ -122,7 +122,7 @@ chown "${HAVEN_USER}:${HAVEN_USER}" "${SSH_HOSTKEY_DIR}"
 chmod 700 "${SSH_HOSTKEY_DIR}"
 
 if [ ! -f "${SSH_HOSTKEY_DIR}/ssh_host_ed25519_key" ]; then
-  echo "[InferHaven] Generating SSH host keys..."
+  echo "[Bulkhead] Generating SSH host keys..."
   ssh-keygen -q -t ed25519 -f "${SSH_HOSTKEY_DIR}/ssh_host_ed25519_key" -N ""
   ssh-keygen -q -t rsa    -b 3072 -f "${SSH_HOSTKEY_DIR}/ssh_host_rsa_key"    -N ""
 fi
@@ -154,9 +154,9 @@ _provision_extra_user() (
   local user_uc; user_uc=$(printf '%s' "${user}" | tr '[:lower:]' '[:upper:]')
   local home="/home/${user}"
   if ! id -u "${user}" >/dev/null 2>&1; then
-    echo "[InferHaven] Creating extra user: ${user}"
+    echo "[Bulkhead] Creating extra user: ${user}"
     useradd -m -s /bin/zsh "${user}" 2>/dev/null || \
-      { echo "[InferHaven] useradd failed for ${user} — skipping."; return 0; }
+      { echo "[Bulkhead] useradd failed for ${user} — skipping."; return 0; }
   fi
 
   # Optional sudo via HAVEN_EXTRA_USERS_SUDO=alice,bob
@@ -196,9 +196,9 @@ EOF
 # to provision and tell the user to migrate.
 if [ "${#ALL_HAVEN_USERS[@]}" -gt 1 ]; then
   if ! mountpoint -q /home 2>/dev/null; then
-    echo "[InferHaven] WARNING: HAVEN_EXTRA_USERS is set but /home is not a volume mount." >&2
-    echo "[InferHaven]   Extra-user homes would be wiped on rebuild. Skipping provisioning." >&2
-    echo "[InferHaven]   Migrate via: scripts/haven-migrate-home.sh (one-time)." >&2
+    echo "[Bulkhead] WARNING: HAVEN_EXTRA_USERS is set but /home is not a volume mount." >&2
+    echo "[Bulkhead]   Extra-user homes would be wiped on rebuild. Skipping provisioning." >&2
+    echo "[Bulkhead]   Migrate via: scripts/haven-migrate-home.sh (one-time)." >&2
   else
     for _u in "${ALL_HAVEN_USERS[@]:1}"; do
       _provision_extra_user "${_u}" || true
@@ -265,7 +265,7 @@ fi
 # ── Dotfiles bootstrap (DOTFILES_REPO=https://github.com/<u>/dotfiles.git) ──
 DOTFILES_SENTINEL="${HOME_DIR}/.haven/.dotfiles-installed"
 if [ -n "${DOTFILES_REPO:-}" ] && [ ! -f "${DOTFILES_SENTINEL}" ]; then
-  echo "[InferHaven] Bootstrapping dotfiles from ${DOTFILES_REPO}..."
+  echo "[Bulkhead] Bootstrapping dotfiles from ${DOTFILES_REPO}..."
   su -s /bin/bash "${HAVEN_USER}" -c "
     cd ~ && git clone --depth=1 '${DOTFILES_REPO}' .dotfiles 2>&1
     if [ -x ~/.dotfiles/install.sh ]; then
@@ -274,7 +274,7 @@ if [ -n "${DOTFILES_REPO:-}" ] && [ ! -f "${DOTFILES_SENTINEL}" ]; then
       ~/.dotfiles/setup.sh 2>&1
     fi
   " >> "${HOME_DIR}/.haven/install.log" 2>&1 || \
-    echo "[InferHaven] Dotfiles bootstrap had errors — see install.log"
+    echo "[Bulkhead] Dotfiles bootstrap had errors — see install.log"
   touch "${DOTFILES_SENTINEL}"
   chown "${HAVEN_USER}:${HAVEN_USER}" "${DOTFILES_SENTINEL}"
 fi
@@ -290,7 +290,7 @@ if [ -n "${INSTALL_ASSISTANTS:-}" ]; then
              exec /usr/local/bin/install-assistants.sh" \
             >> "${INSTALL_LOG}" 2>&1
     ) &
-    echo "[InferHaven] Installing assistants in background: ${INSTALL_ASSISTANTS}"
+    echo "[Bulkhead] Installing assistants in background: ${INSTALL_ASSISTANTS}"
 fi
 
 # ── Auto-tune default model (background) ────────────────────────────────────
@@ -303,19 +303,19 @@ if [ "${HAVEN_AUTO_TUNE:-1}" != "0" ] && [ -n "${DEFAULT_MODEL:-}" ]; then
     while [ "${attempts}" -lt "${max_attempts}" ]; do
       if curl -sf "http://ollama:11434/api/tags" 2>/dev/null \
          | grep -q "\"${DEFAULT_MODEL}\"" 2>/dev/null; then
-        echo "[InferHaven] Auto-tuning ${DEFAULT_MODEL}..."
+        echo "[Bulkhead] Auto-tuning ${DEFAULT_MODEL}..."
         su -s /bin/bash "${HAVEN_USER}" -c \
-          "OLLAMA_HOST='http://ollama:11434' HAVEN_AUTO_TUNE=0 HAVEN_CTX='${HAVEN_CTX:-32768}' haven tune '${DEFAULT_MODEL}'" \
+          "OLLAMA_HOST='http://ollama:11434' HAVEN_AUTO_TUNE=0 HAVEN_CTX='${HAVEN_CTX:-32768}' bulkhead tune '${DEFAULT_MODEL}'" \
           >> "${INSTALL_LOG}" 2>&1 \
-          && echo "[InferHaven] ${DEFAULT_MODEL} tuned." \
-          || echo "[InferHaven] Auto-tune failed. Run: haven tune ${DEFAULT_MODEL}"
+          && echo "[Bulkhead] ${DEFAULT_MODEL} tuned." \
+          || echo "[Bulkhead] Auto-tune failed. Run: bulkhead tune ${DEFAULT_MODEL}"
         break
       fi
       attempts=$(( attempts + 1 ))
       sleep 5
     done
     if [ "${attempts}" -ge "${max_attempts}" ]; then
-      echo "[InferHaven] WARNING: DEFAULT_MODEL '${DEFAULT_MODEL}' not found in Ollama after $((max_attempts * 5))s. Check the model name or pull it with: haven pull '${DEFAULT_MODEL}'"
+      echo "[Bulkhead] WARNING: DEFAULT_MODEL '${DEFAULT_MODEL}' not found in Ollama after $((max_attempts * 5))s. Check the model name or pull it with: bulkhead pull '${DEFAULT_MODEL}'"
     fi
   ) >> "${INSTALL_LOG}" 2>&1 &
 fi
@@ -353,14 +353,14 @@ PKG_FILE="${HOME_DIR}/.apt-packages"
     [ "${age}" -ge 86400 ]
   }
   if _lists_stale; then
-    echo "[InferHaven] Refreshing apt package lists..."
+    echo "[Bulkhead] Refreshing apt package lists..."
     apt-get update -qq 2>&1
   fi
   if [ -s "${PKG_FILE}" ]; then
-    echo "[InferHaven] Restoring persistent packages in background..."
+    echo "[Bulkhead] Restoring persistent packages in background..."
     xargs apt-get install -y --no-install-recommends -qq < "${PKG_FILE}" 2>&1 \
-      && echo "[InferHaven] Persistent packages ready." \
-      || echo "[InferHaven] Warning: some packages failed to install." >&2
+      && echo "[Bulkhead] Persistent packages ready." \
+      || echo "[Bulkhead] Warning: some packages failed to install." >&2
   fi
 ) &
 
@@ -379,7 +379,7 @@ chown "${HAVEN_USER}:${HAVEN_USER}" "${TMUX_BOOT_LOG}" 2>/dev/null || true
 
     tmux start-server 2>>'${TMUX_BOOT_LOG}' || true
     tmux set-option -g exit-empty off 2>/dev/null || true
-    # Capture visible pane scrollback on save so 'haven tmux restore' brings
+    # Capture visible pane scrollback on save so 'bulkhead tmux restore' brings
     # back the terminal output you were looking at, not just the layout.
     tmux set-option -g @resurrect-capture-pane-contents 'on' 2>/dev/null || true
     # Restart foreground programs (vim, nvim, less, top, htop, btop, plus the
@@ -423,7 +423,7 @@ chown "${HAVEN_USER}:${HAVEN_USER}" "${TMUX_BOOT_LOG}" 2>/dev/null || true
     "/usr/local/bin/ih-pane-restore" \
     >> "${TMUX_BOOT_LOG}" 2>&1 || true
 
-  echo "[InferHaven] Haven tmux session ready."
+  echo "[Bulkhead] Haven tmux session ready."
 ) &
 
 # ── supercronic (cron-in-container — log rotation, model GC, cache warmer) ──
@@ -437,8 +437,8 @@ if [ -x /usr/local/bin/supercronic ] && [ -f /etc/inferhaven/crontab ]; then
   SUPERCRONIC_PID=$!
 fi
 
-echo "[InferHaven] Workspace ready."
-echo "[InferHaven] SSH into this container: ssh -p ${SSH_PORT:-2222} ${HAVEN_USER}@<host>"
+echo "[Bulkhead] Workspace ready."
+echo "[Bulkhead] SSH into this container: ssh -p ${SSH_PORT:-2222} ${HAVEN_USER}@<host>"
 
 # ── Start SSH server ─────────────────────────────────────────────────────────
 "$@" &
@@ -446,7 +446,7 @@ SSHD_PID=$!
 
 _shutdown() {
   echo "[$(date '+%H:%M:%S')] SIGTERM received — bounded shutdown..." >> "${TMUX_BOOT_LOG}" 2>/dev/null || true
-  echo "[InferHaven] Container stopping — bounded shutdown (max ~5 s)..."
+  echo "[Bulkhead] Container stopping — bounded shutdown (max ~5 s)..."
   # Kill helpers FIRST so they cannot block.
   # shellcheck disable=SC2015  # `|| true` keeps shutdown trap non-fatal if kill races a missing PID
   [ -n "${SUPERCRONIC_PID}" ] && kill "${SUPERCRONIC_PID}" 2>/dev/null || true

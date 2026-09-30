@@ -9,7 +9,7 @@
 #
 # Opens a popup with five views:
 #   System      — memory bars (active/cache/available), per-core CPU, disk, GPU
-#   Downloads   — live haven pullback status
+#   Downloads   — live bulkhead pullback status
 #   Alerts      — fzf list of undismissed alert files; dismiss with Enter
 #   Containers  — live docker stats for inferhaven containers (CPU normalized)
 #   Sessions    — tmux session list with create/attach/rename/kill/save actions
@@ -341,7 +341,7 @@ while true; do
     printf "  ${CB}${CY}Background Downloads${CR}  ${CD}(refreshes every 3s)${CR}\n"
     printf "  ${CD}System  │${CR}  ${CB}${CY}[Downloads]${CR}  ${CD}│  Alerts  │  Containers  │  Sessions${CR}   ${CD}← → q${CR}\n"
     printf "  ${C3}──────────────────────────────────────────────────────────${CR}\n\n"
-    haven pullback status 2>/dev/null \
+    bulkhead pullback status 2>/dev/null \
         || printf "  ${CD}No active downloads.${CR}\n"
     printf "\n  ${CD}← → navigate   q close${CR}\n"
 
@@ -713,7 +713,7 @@ while true; do
 
         t)
             printf "\n  ${C2}Starting tmate session...${CR}\n"
-            haven tmate start 2>&1 | sed "s/^/  /"
+            bulkhead tmate start 2>&1 | sed "s/^/  /"
             sleep 2
             ;;
         T)
@@ -721,7 +721,7 @@ while true; do
             read -rn1 _confirm 2>/dev/null
             printf "\n"
             if [ "$_confirm" = "y" ] || [ "$_confirm" = "Y" ]; then
-                haven tmate kill 2>&1 | sed "s/^/  /"
+                bulkhead tmate kill 2>&1 | sed "s/^/  /"
                 sleep 1
             fi
             ;;

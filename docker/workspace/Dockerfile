@@ -171,7 +171,7 @@ RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes \
 
 # ── @devcontainers/cli (npm global) ─────────────────────────────────────────
 # Required for nested devcontainer support: a contributor SSH'd into a
-# production workspace can run `haven devcontainer up <path>` to spin up an
+# production workspace can run `bulkhead devcontainer up <path>` to spin up an
 # isolated dev stack inside it. Also handy for headless CI use.
 RUN npm install -g @devcontainers/cli \
     && devcontainer --version | head -1
@@ -311,7 +311,8 @@ USER root
 COPY --link scripts/lib                         /usr/local/lib/haven/
 COPY --link scripts/entrypoint.sh               /usr/local/bin/entrypoint.sh
 COPY --link scripts/add-ssh-key.sh              /usr/local/bin/add-ssh-key
-COPY --link scripts/haven.sh                    /usr/local/bin/haven
+COPY --link scripts/haven.sh                    /usr/local/bin/bulkhead
+COPY --link scripts/haven-alias.sh              /usr/local/bin/haven
 COPY --link scripts/haven-install.sh            /usr/local/bin/haven-install
 COPY --link scripts/haven-logrotate.sh          /usr/local/bin/haven-logrotate
 COPY --link scripts/haven-migrate-home.sh       /usr/local/bin/haven-migrate-home
@@ -331,6 +332,7 @@ COPY --link scripts/ih-pane-capture.sh          /usr/local/bin/ih-pane-capture
 COPY --link scripts/ih-pane-restore.sh          /usr/local/bin/ih-pane-restore
 RUN chmod +x /usr/local/bin/entrypoint.sh \
              /usr/local/bin/add-ssh-key \
+             /usr/local/bin/bulkhead \
              /usr/local/bin/haven \
              /usr/local/bin/haven-install \
              /usr/local/bin/haven-logrotate \
@@ -348,7 +350,8 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
              /usr/local/bin/inferhaven-alert-watcher \
              /usr/local/bin/inferhaven-alerts-popup \
              /usr/local/bin/ih-pane-capture \
-             /usr/local/bin/ih-pane-restore
+             /usr/local/bin/ih-pane-restore \
+    && ln -s bulkhead /usr/local/bin/bh
 
 # ── Starship default config + crontab (baked into image, copied on first start) ──
 RUN mkdir -p /etc/inferhaven

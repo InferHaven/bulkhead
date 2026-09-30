@@ -14,7 +14,7 @@ grep -q '"terminal.integrated.profiles.linux"' "${SETTINGS_FILE}" 2>/dev/null &&
 
 # Only proceed if the file ends with a lone "}" (standard pretty-printed JSON)
 if [ "$(tail -1 "${SETTINGS_FILE}")" != "}" ]; then
-    echo "[InferHaven] WARNING: settings.json has unexpected format — skipping terminal profile migration" >&2
+    echo "[Bulkhead] WARNING: settings.json has unexpected format — skipping terminal profile migration" >&2
     exit 0
 fi
 

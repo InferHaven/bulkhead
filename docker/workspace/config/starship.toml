@@ -76,7 +76,7 @@ style = "#f05400"
 detect_files = ["Cargo.toml"]
 
 # ── Background jobs ───────────────────────────────────────────────────────────
-# Surfaces 'haven pullback' workers — shows count of background shell jobs.
+# Surfaces 'bulkhead pullback' workers — shows count of background shell jobs.
 [jobs]
 symbol = "  "
 format = "[$symbol$number]($style) "

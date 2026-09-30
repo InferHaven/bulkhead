@@ -87,8 +87,8 @@ set_inferhaven_var "INFERHAVEN_VERSION"   "0.1.0"
 # API key placeholder — Ollama ignores the Authorization header it sends.
 set_inferhaven_var "OLLAMA_OPENAI_KEY"    "ollama"
 
-# HAVEN_CTX controls the target context window for haven tune / haven pull.
-# If unset, haven tune defaults to 32768. Set to 16384 on memory-constrained hardware.
+# HAVEN_CTX controls the target context window for bulkhead tune / bulkhead pull.
+# If unset, bulkhead tune defaults to 32768. Set to 16384 on memory-constrained hardware.
 if [ -n "${HAVEN_CTX:-}" ]; then
     set_inferhaven_var "HAVEN_CTX" "${HAVEN_CTX}"
 fi
@@ -103,7 +103,7 @@ chown "${HAVEN_USER}:${HAVEN_USER}" "${INFERHAVEN_FILE}"
 # ── Claude Code network access ────────────────────────────────────────────────
 # Disable non-essential network access (telemetry, version checks) regardless
 # of whether ANTHROPIC_API_KEY is set. This is critical when using Claude Code
-# with a local Ollama model via 'haven claude' — without it, Claude Code tries
+# with a local Ollama model via 'bulkhead claude' — without it, Claude Code tries
 # to reach Anthropic endpoints that don't apply to local inference and hangs.
 if [ "${CLAUDE_CODE_DISABLE_TELEMETRY:-}" = "true" ] || \
    [ "${CLAUDE_CODE_DISABLE_TELEMETRY:-}" = "1" ]; then
@@ -229,7 +229,7 @@ if [ ! -f "${AIDER_CFG}" ]; then
 ## Full option reference: https://aider.chat/docs/config/options.html
 
 # ANTHROPIC_API_KEY is exported via ~/.inferhaven — Aider picks it up automatically.
-# "haven aider" always uses local Ollama models regardless of this setting.
+# "bulkhead aider" always uses local Ollama models regardless of this setting.
 model: claude-sonnet-4-6
 '
         log "Aider: config created (Anthropic backend — key exported via ~/.inferhaven)."
@@ -239,7 +239,7 @@ model: claude-sonnet-4-6
 ## Full option reference: https://aider.chat/docs/config/options.html
 
 # OPENAI_API_KEY is exported via ~/.inferhaven — Aider picks it up automatically.
-# "haven aider" always uses local Ollama models regardless of this setting.
+# "bulkhead aider" always uses local Ollama models regardless of this setting.
 model: gpt-4o
 '
         log "Aider: config created (OpenAI backend — key exported via ~/.inferhaven)."
@@ -279,7 +279,7 @@ fi
 # ── Avante multi-provider sidecar config ─────────────────────────────────────
 # Always write on first start; default provider = ollama (local-first).
 # Cloud providers are included when their API key is present.
-# _sync_avante_models (haven pull/tune/remove) keeps the file up to date.
+# _sync_avante_models (bulkhead pull/tune/remove) keeps the file up to date.
 #
 # Ollama is configured as __inherited_from="openai" pointing at Ollama's
 # OpenAI-compatible endpoint (/v1). This uses avante's fully-tested OpenAI
@@ -302,7 +302,7 @@ if [ "${_needs_sidecar_write}" = "1" ]; then
     {
         printf '%s\n' \
             "-- _haven: managed" \
-            "-- InferHaven rewrites this file on model sync (haven pull/tune/remove)." \
+            "-- InferHaven rewrites this file on model sync (bulkhead pull/tune/remove)." \
             "-- Remove the first line above to manage this file yourself." \
             "return {" \
             "  provider = \"ollama\"," \
@@ -336,7 +336,7 @@ if [ "${_needs_sidecar_write}" = "1" ]; then
     [ -n "${OPENAI_API_KEY:-}" ]     && _plist="${_plist}, openai"
     [ -n "${GEMINI_API_KEY:-}" ]     && _plist="${_plist}, gemini"
     [ -n "${OPENROUTER_API_KEY:-}" ] && _plist="${_plist}, openrouter"
-    log "Avante: sidecar written (providers: ${_plist}; model filled on first haven pull)."
+    log "Avante: sidecar written (providers: ${_plist}; model filled on first bulkhead pull)."
 fi
 
 # ── Final permissions pass ────────────────────────────────────────────────────

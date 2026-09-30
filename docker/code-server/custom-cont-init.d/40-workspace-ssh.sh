@@ -45,7 +45,7 @@ for _i in $(seq 1 10); do
 done
 
 if [ "${_ready}" -eq 0 ]; then
-    echo "[InferHaven] WARNING: ${WS_SSH_DIR} not found after 10s — skipping SSH key injection" >&2
+    echo "[Bulkhead] WARNING: ${WS_SSH_DIR} not found after 10s — skipping SSH key injection" >&2
 else
     CS_PUBKEY_CONTENT=$(cat "${CS_PUBKEY}")
     if ! grep -qF "${CS_PUBKEY_CONTENT}" "${WS_AUTH_KEYS_AUTO}" 2>/dev/null; then
@@ -69,6 +69,6 @@ if [ -f "${WS_HOSTKEY_PUB}" ]; then
         chmod 644 "${CS_KNOWN_HOSTS}"
     fi
 else
-    echo "[InferHaven] WARNING: ${WS_HOSTKEY_PUB} not found — known_hosts not updated" >&2
-    echo "[InferHaven]   Terminal SSH will fail until workspace has started at least once" >&2
+    echo "[Bulkhead] WARNING: ${WS_HOSTKEY_PUB} not found — known_hosts not updated" >&2
+    echo "[Bulkhead]   Terminal SSH will fail until workspace has started at least once" >&2
 fi

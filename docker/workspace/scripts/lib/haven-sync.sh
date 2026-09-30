@@ -377,7 +377,7 @@ _haven_render_avante() {
 
     {
         printf '%s\n' "${sentinel}" \
-            "-- InferHaven rewrites this file on model sync (haven pull/tune/remove)." \
+            "-- InferHaven rewrites this file on model sync (bulkhead pull/tune/remove)." \
             "-- Remove the first line above to manage this file yourself." \
             "return {"
         printf '  provider = "ollama",\n'

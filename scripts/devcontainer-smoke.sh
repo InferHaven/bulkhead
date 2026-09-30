@@ -119,25 +119,41 @@ else
   printf "  \033[33mSKIP\033[0m model check (SKIP_MODEL=1)\n"
 fi
 
-hdr "haven bench"
+hdr "CLI names"
+
+# bulkhead is the command, bh its short form, haven the old name: all three run
+# the same CLI, and only the old name prints the rename notice (on stderr).
+if [ "$(bh version 2>/dev/null)" = "$(bulkhead version)" ] \
+   && [ "$(haven version 2>/dev/null)" = "$(bulkhead version)" ]; then
+  pass "bulkhead, bh and haven run the same CLI ($(bulkhead version))"
+else
+  fail "bulkhead, bh and haven disagree on 'version'"
+fi
+if haven version 2>&1 >/dev/null | grep -q "This command is now 'bulkhead'"; then
+  pass "haven prints the rename notice"
+else
+  fail "haven does not print the rename notice"
+fi
+
+hdr "bulkhead bench"
 
 # wiring is model-independent — bench must be listed in help
-if haven help 2>/dev/null | grep -q "bench"; then
-  pass "haven bench wired (listed in help)"
+if bulkhead help 2>/dev/null | grep -q "bench"; then
+  pass "bulkhead bench wired (listed in help)"
 else
-  fail "haven bench not listed in 'haven help'"
+  fail "bulkhead bench not listed in 'bulkhead help'"
 fi
 
 # a live measurement needs a model present
 if [ "${SKIP_MODEL:-0}" != "1" ]; then
-  if haven bench "${MODEL}" --tokens 16 --runs 1 --json 2>/dev/null \
+  if bulkhead bench "${MODEL}" --tokens 16 --runs 1 --json 2>/dev/null \
        | jq -e '.gen_tps_avg > 0' >/dev/null 2>&1; then
-    pass "haven bench returned a positive gen_tps_avg for ${MODEL}"
+    pass "bulkhead bench returned a positive gen_tps_avg for ${MODEL}"
   else
-    fail "haven bench did not return a positive gen_tps_avg for ${MODEL}"
+    fail "bulkhead bench did not return a positive gen_tps_avg for ${MODEL}"
   fi
 else
-  skip "haven bench live run (SKIP_MODEL=1)"
+  skip "bulkhead bench live run (SKIP_MODEL=1)"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -164,7 +180,7 @@ fi
 if [ "${SKIP_TOOLCHAIN:-0}" != "1" ]; then
   hdr "Toolchain on PATH"
 
-  for bin in haven tmux zsh nvim uv go node docker gh jq rg fd bat; do
+  for bin in bulkhead bh haven tmux zsh nvim uv go node docker gh jq rg fd bat; do
     if command -v "$bin" >/dev/null 2>&1; then
       pass "$bin"
     else
@@ -215,11 +231,11 @@ fi
 if [ "$FLAVOR" = "full-stack" ] && [ "${SKIP_FULL_STACK_EXTRAS:-0}" != "1" ]; then
   hdr "Full-stack extras"
 
-  if command -v haven >/dev/null 2>&1 \
-     && haven service ollama status >/dev/null 2>&1; then
-    pass "haven service introspection works"
+  if command -v bulkhead >/dev/null 2>&1 \
+     && bulkhead service ollama status >/dev/null 2>&1; then
+    pass "bulkhead service introspection works"
   else
-    fail "haven service introspection failed"
+    fail "bulkhead service introspection failed"
   fi
 
   if wait_for "$SERVICE_WAIT" sh -c 'curl -sf --max-time 5 http://code-server:8443/login || curl -sf --max-time 5 http://code-server:8443/healthz'; then
@@ -278,8 +294,8 @@ if [ "$FLAVOR" = "nested" ]; then
   fi
 
   # Find the inner stack via the workspace's own compose-project label so
-  # we don't hardcode a project-name prefix. Older `haven devcontainer up`
-  # ran the inner stack as `inferhaven-dev`; current `haven nest up` uses
+  # we don't hardcode a project-name prefix. Older `bulkhead devcontainer up`
+  # ran the inner stack as `inferhaven-dev`; current `bulkhead nest up` uses
   # `haven-nest-<basename>`. The label is authoritative either way.
   _proj=""
   if [ -r /usr/local/lib/haven/haven-resolve.sh ]; then

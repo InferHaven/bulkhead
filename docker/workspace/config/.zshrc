@@ -90,14 +90,14 @@ if [ -z "$TMUX" ] && [ "$TERM_PROGRAM" != "vscode" ]; then
   ai-status
   echo ""
   echo "  Quick start:"
-  echo "    haven tmux            — Attach to Haven (or pick from multiple sessions)"
-  echo "    haven models          — List available models"
-  echo "    haven chat            — Chat with your AI model"
-  echo "    haven help            — All commands"
+  echo "    bulkhead tmux            — Attach to Haven (or pick from multiple sessions)"
+  echo "    bulkhead models          — List available models"
+  echo "    bulkhead chat            — Chat with your AI model"
+  echo "    bulkhead help            — All commands"
   echo ""
   echo "  Your Haven tmux session is always running and fully restored after"
   echo "  every restart (windows, panes, and working directories preserved)."
-  echo "  Sessions auto-save every 15 minutes. Type 'haven tmux help' for more."
+  echo "  Sessions auto-save every 15 minutes. Type 'bulkhead tmux help' for more."
   echo ""
 fi
 

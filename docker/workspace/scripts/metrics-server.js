@@ -355,5 +355,5 @@ const server = http.createServer((req, res) => {
 server.timeout = REQ_TIMEOUT_MS;
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[InferHaven] Metrics server listening on :${PORT}`);
+  console.log(`[Bulkhead] Metrics server listening on :${PORT}`);
 });
