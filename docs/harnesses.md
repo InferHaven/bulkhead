@@ -25,9 +25,9 @@ Available values for `INSTALL_ASSISTANTS`:
 | `amp` | Amp | npm |
 | `avante` | Avante (Neovim) | lazy.nvim (Neovim plugin) |
 
-Check what is installed at any time: `haven harness`
+Check what is installed at any time: `bulkhead harness`
 
-Harnesses that support local Ollama sync (`opencode`, `aider`, `pi`, `qwencode`, `goose`, `continue`, `avante`) automatically update their configs after every `haven pull`, `haven tune`, and `haven remove`.
+Harnesses that support local Ollama sync (`opencode`, `aider`, `pi`, `qwencode`, `goose`, `continue`, `avante`) automatically update their configs after every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove`.
 
 ---
 
@@ -73,17 +73,17 @@ Your last `/models` selection is mirrored back into `~/.config/opencode/config.j
 
 Diff-based AI pair programmer. Reads your codebase, proposes changes as unified diffs. Does **not** require tool calling, almost any model works.
 
-### Local models via `haven aider`
+### Local models via `bulkhead aider`
 
 When `aider` is in `INSTALL_ASSISTANTS` .env variable, InferHaven manages `~/.aider.model.settings.yml` automatically.
 **Opt out of auto-sync**: remove the `## inferhaven:managed` line at the top of `~/.aider.model.settings.yml`. InferHaven will never touch that file again once the sentinel is gone.
 
 **Per-project overrides**: create `.aider.model.settings.yml` in your repo root. Aider loads it *after* the home-dir file, so your per-project settings win on any conflicts, no need to edit the managed file.
 
-`haven aider` handles model selection and endpoint wiring for local Ollama models. It sets `OLLAMA_API_BASE` and passes the `ollama_chat/` prefix automatically, no manual config needed per session. The `OLLAMA_API_BASE` environment variable is scoped to that `aider` invocation only, running plain `aider` afterwards still uses whatever `~/.aider.conf.yml` specifies.
+`bulkhead aider` handles model selection and endpoint wiring for local Ollama models. It sets `OLLAMA_API_BASE` and passes the `ollama_chat/` prefix automatically, no manual config needed per session. The `OLLAMA_API_BASE` environment variable is scoped to that `aider` invocation only, running plain `aider` afterwards still uses whatever `~/.aider.conf.yml` specifies.
 
 ```bash
-haven aider          # launch with local Ollama model (auto-configured)
+bulkhead aider          # launch with local Ollama model (auto-configured)
 aider                # launch with cloud key or ~/.aider.conf.yml default
 
 # Override model for one session (use ollama_chat/ prefix — recommended)
@@ -102,7 +102,7 @@ aider src/main.py tests/test_main.py
 IF a single model is installed, that model will be loaded, and if multiple models are installed you will see a model menu just like the one below.
 
 ```bash
-╭─  haven aider — local models  ───────────────────────────────────╮
+╭─  bulkhead aider — local models  ───────────────────────────────────╮
 │  MODEL                                       PARAMS     SIZE     │
 │  qwen2.5-coder:7b-instruct-q4_K_M            7B         4.7 GB   │
 │> qwen2.5-coder:14b-instruct-q4_K_M           14B        9.0 GB   │
@@ -195,18 +195,18 @@ InferHaven writes `~/.config/goose/config.yaml` on first install with the Ollama
 
 The InferHaven installed Goose version is pinned to v1.27.2 to avoid installing releases that break Ollama streaming. Override to test a newer release using the GOOSE_VERSION variable in the `.env` file, check [the goose repo](https://github.com/aaif-goose/goose/releases) for currently available versions.
 
-### Local models via `haven goose`
+### Local models via `bulkhead goose`
 
-Goose connects to a single API endpoint per session. The `haven goose` command handles the model selection and endpoint wiring for you for you: it sets the required environment variables, presents a model menu if more than one is installed, and drops you straight into Goose. All environment variables are scoped to that session only, running plain `goose` afterwards still uses `~/.config/goose/config.yaml`.
+Goose connects to a single API endpoint per session. The `bulkhead goose` command handles the model selection and endpoint wiring for you for you: it sets the required environment variables, presents a model menu if more than one is installed, and drops you straight into Goose. All environment variables are scoped to that session only, running plain `goose` afterwards still uses `~/.config/goose/config.yaml`.
 
-When multiple models are installed, a model picker is presented before launch (same UI as `haven aider`).
+When multiple models are installed, a model picker is presented before launch (same UI as `bulkhead aider`).
 
 ### Ollama Tool Shims
 
 After selecting a model, a second menu asks whether to enable the **Ollama tool shim**:
 
 ```bash
-╭─  haven goose — Ollama tool shim  ────────────────────────────────╮
+╭─  bulkhead goose — Ollama tool shim  ────────────────────────────────╮
 │  Experimental — helps models without native tool calls work with  │
 │  Goose                                                            │
 │> No  — standard mode (use native tool calls)                      │
@@ -217,15 +217,15 @@ After selecting a model, a second menu asks whether to enable the **Ollama tool 
 
 The tool shim routes Goose's tool calls through a second interpreter model, which can help models without native tool-call support participate in agentic workflows. Models with native tool calling don't need it, use standard mode.
 
-> **Tool shim and memory:** enabling the shim holds two model instances simultaneously. On memory-constrained hardware this doubles VRAM/RAM pressure and can trigger OOM kills, `haven goose` displays a warning when the shim is enabled.
+> **Tool shim and memory:** enabling the shim holds two model instances simultaneously. On memory-constrained hardware this doubles VRAM/RAM pressure and can trigger OOM kills, `bulkhead goose` displays a warning when the shim is enabled.
 
 ### Streaming stalls and context tuning
 
-Goose loads a large set of tool schemas into the context on every request. Combined with a large context window this can push Ollama's KV-cache allocation high enough to cause slow inference, stream stalls, or OOM crashes on marginal hardware. `haven goose` caps `OLLAMA_CONTEXT_LENGTH` at `GOOSE_CTX_LIMIT` (default `32768`) regardless of what tuning is set for the model. If your model was tuned to a higher value, the launch line shows:
+Goose loads a large set of tool schemas into the context on every request. Combined with a large context window this can push Ollama's KV-cache allocation high enough to cause slow inference, stream stalls, or OOM crashes on marginal hardware. `bulkhead goose` caps `OLLAMA_CONTEXT_LENGTH` at `GOOSE_CTX_LIMIT` (default `32768`) regardless of what tuning is set for the model. If your model was tuned to a higher value, the launch line shows:
 
   `[InferHaven] Context:    32768 tokens (model supports 131072, capped; set GOOSE_CTX_LIMIT to override)`
 
-To reduce pressure further, set `GOOSE_CTX_LIMIT=16384` in `.env`. To allow the full model context, set it to the desired value. The cap only applies to `haven goose`, plain `goose` reads `~/.inferhaven` directly.
+To reduce pressure further, set `GOOSE_CTX_LIMIT=16384` in `.env`. To allow the full model context, set it to the desired value. The cap only applies to `bulkhead goose`, plain `goose` reads `~/.inferhaven` directly.
 
 **Recommendations**
 
@@ -249,7 +249,7 @@ Goose supports multiple cloud providers. API keys exported via `~/.inferhaven` a
 | `GEMINI_API_KEY` | `google` (set as `GOOGLE_API_KEY`) | Gemini models |
 
 ```bash
-haven goose                            # launch with model picker + tool shim option
+bulkhead goose                            # launch with model picker + tool shim option
 goose                                  # launch with ~/.config/goose/config.yaml defaults
 goose configure                        # interactive setup (switch provider, add extensions)
 
@@ -271,12 +271,12 @@ Anthropic's official CLI harness. Full agentic loop: reads files, writes patches
 | `claude-opus-4-7` | Maximum capability and higher cost |
 | `claude-haiku-4-5` | Fastest; good for completions and simple edits |
 
-### Local models via `haven claude`
+### Local models via `bulkhead claude`
 
-Claude Code connects to a single API endpoint per session. `haven claude` handles the switching for you: it sets the required environment variables, presents a model menu if more than one is installed, and drops you straight into Claude Code.
+Claude Code connects to a single API endpoint per session. `bulkhead claude` handles the switching for you: it sets the required environment variables, presents a model menu if more than one is installed, and drops you straight into Claude Code.
 
 ```bash
-haven claude
+bulkhead claude
 ```
 
 **How it behaves:**
@@ -285,7 +285,7 @@ With multiple models installed you will be able to select from a menu. Select wi
 The picker looks like this when multiple models are installed:
 
 ```bash
-╭─  haven claude — local models  ──────────────────────────────────╮
+╭─  bulkhead claude — local models  ──────────────────────────────────╮
 │  MODEL                                       PARAMS     SIZE     │
 │  qwen3.5:9b                                  9B         6.6 GB   │
 │  gpt-oss:20b                                 20B        14.0 GB  │
@@ -311,7 +311,7 @@ The environment variables are scoped to that `claude` invocation only, running p
 ```bash
 claude          # launch (cloud)
 claude --help   # full option reference
-haven claude    # Choose a local model to run 
+bulkhead claude    # Choose a local model to run 
 ```
 
 ---
@@ -322,7 +322,7 @@ Alibaba's CLI harness, designed around the Qwen model family. InferHaven auto-ge
 
 ### Local models
 
-All Ollama models are registered as OpenAI-compatible providers pointing at the container-internal Ollama endpoint, with `num_ctx` sourced from the actual model parameters (reflecting any `haven tune` values).
+All Ollama models are registered as OpenAI-compatible providers pointing at the container-internal Ollama endpoint, with `num_ctx` sourced from the actual model parameters (reflecting any `bulkhead tune` values).
 
 | Model | Size | Notes |
 | ------- | ------ | ------- |
@@ -352,7 +352,7 @@ Set `QWEN_API_KEY` or any supported cloud API key in `.env` and add your provide
 | `qwen-3-coder-next` | Qwen API / Coding Plan | Code-optimized model; excels at refactoring, debugging, and structured output |
 
 ```bash
-haven qwen    # recommended — model picker, bypasses auth screen, launches directly
+bulkhead qwen    # recommended — model picker, bypasses auth screen, launches directly
 
 qwen          # also works — InferHaven writes security.auth.selectedType and
               # model.name into settings.json so the auth screen is skipped
@@ -407,11 +407,11 @@ When `continue` is in `INSTALL_ASSISTANTS`, InferHaven:
 
 1. Installs the `cn` CLI (`npm i -g @continuedev/cli`)
 2. Writes `~/.continue/config.yaml` with all available Ollama models
-3. Keeps the config in sync after every `haven pull`, `haven tune`, and `haven remove`
+3. Keeps the config in sync after every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove`
 
 ### Local models
 
-InferHaven manages `~/.continue/config.yaml` as long as `cn` is installed. Each model is registered with its actual `contextLength` (from `haven tune`), and the `DEFAULT_MODEL` (or first available model) is also assigned the `autocomplete` role. The config is re-written on every sync, so it always reflects the current model list, even if Continue's auth flow modifies it.
+InferHaven manages `~/.continue/config.yaml` as long as `cn` is installed. Each model is registered with its actual `contextLength` (from `bulkhead tune`), and the `DEFAULT_MODEL` (or first available model) is also assigned the `autocomplete` role. The config is re-written on every sync, so it always reflects the current model list, even if Continue's auth flow modifies it.
 
 **Opt out of auto-sync**: `touch ~/.continue/.no-autosync`. InferHaven will never touch the file again.
 
@@ -466,7 +466,7 @@ When `avante` is in `INSTALL_ASSISTANTS`, InferHaven:
 2. Writes `~/.config/nvim/lua/plugins/avante.lua`, the plugin config (written once, never overwritten)
 3. Writes `~/.config/nvim/lua/inferhaven-avante-config.lua`, the multi-provider sidecar (managed, see below)
 4. Installs `~/.local/bin/avante`, a command that opens Neovim directly into Zen Mode
-5. Keeps the active Ollama model in sync after every `haven pull`, `haven tune`, and `haven remove`
+5. Keeps the active Ollama model in sync after every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove`
 
 ```bash
 avante                            # open Zen Mode — AI-assisted coding in Neovim
@@ -477,7 +477,7 @@ Inside Neovim, use `:AvanteModels` to pick a model (all Ollama models + configur
 
 ### Local models
 
-All available Ollama models appear under the `ollama` provider in `:AvanteModels`. InferHaven keeps the sidecar in sync after every `haven pull`, `haven tune`, and `haven remove`, new models appear in the picker automatically.
+All available Ollama models appear under the `ollama` provider in `:AvanteModels`. InferHaven keeps the sidecar in sync after every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove`, new models appear in the picker automatically.
 
 **Recommended models**
 

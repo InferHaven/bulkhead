@@ -75,7 +75,7 @@ Pull a model before connecting:
 
 ```bash
 # Within inferhaven-core/
-haven pull qwen2.5-coder:14b
+bulkhead pull qwen2.5-coder:14b
 ```
 
 ## Performance tip

@@ -312,7 +312,7 @@ OLLAMA_KEEP_ALIVE=0            # unload model between calls
 
 After editing `.env`: `docker compose up -d ollama` (not `restart`, `restart` keeps the old env vars).
 
-`haven doctor` flags:
+`bulkhead doctor` flags:
 
 - iGPU detected (parses `uma: 1` from Ollama init logs)
 - Recent OOM markers in Ollama logs
@@ -341,11 +341,11 @@ If your card runs the [ROCm v7 GPU list](https://docs.ollama.com/gpu#linux-suppo
 
 ### Known issues on AMD / Vulkan
 
-> **Upstream Ollama bug, Vulkan + flash attention + Gemma3.** On AMD GPUs running the Vulkan backend, enabling `OLLAMA_FLASH_ATTENTION=1` can cause Gemma3 (and some heavy-quant models) to load with partial offload (~33 %) and emit corrupted or nonsense output. The same model loads correctly on NVIDIA/CUDA. **This is an upstream Ollama/Vulkan issue, not InferHaven tuning**. `haven tune` is GPU-agnostic and never sets `num_gpu`.
+> **Upstream Ollama bug, Vulkan + flash attention + Gemma3.** On AMD GPUs running the Vulkan backend, enabling `OLLAMA_FLASH_ATTENTION=1` can cause Gemma3 (and some heavy-quant models) to load with partial offload (~33 %) and emit corrupted or nonsense output. The same model loads correctly on NVIDIA/CUDA. **This is an upstream Ollama/Vulkan issue, not InferHaven tuning**. `bulkhead tune` is GPU-agnostic and never sets `num_gpu`.
 >
 > **What to try:**
 >
-> 1. Run `haven doctor`, the **Ollama backend** section flags `OLLAMA_FLASH_ATTENTION=1` and non-`f16` KV cache when an AMD/Vulkan host is detected.
+> 1. Run `bulkhead doctor`, the **Ollama backend** section flags `OLLAMA_FLASH_ATTENTION=1` and non-`f16` KV cache when an AMD/Vulkan host is detected.
 > 2. Set `OLLAMA_FLASH_ATTENTION=0` in `.env` and `docker compose restart ollama`.
 > 3. If you also have `OLLAMA_KV_CACHE_TYPE=q4_0`/`q8_0`, revert to `f16` for affected models, quantised KV cache can break partial-offload on Vulkan.
 > 4. ROCm is the supported path on AMD when your card is on the [ROCm v7 GPU list](https://docs.ollama.com/gpu#linux-support). Vulkan is the fallback for cards not covered by ROCm.
@@ -393,13 +393,13 @@ watch -n 1 rocm-smi
 ### Model runs on CPU despite GPU present
 
 - Model is too large for VRAM, Ollama falls back to CPU automatically
-- Try a smaller or quantised variant: `haven pull qwen2.5-coder:7b-q4_K_M`
+- Try a smaller or quantised variant: `bulkhead pull qwen2.5-coder:7b-q4_K_M`
 - Check VRAM usage during inference with `nvidia-smi` or `rocm-smi`
 
 ---
 
-Run `haven doctor` for automated checks of your environment:
+Run `bulkhead doctor` for automated checks of your environment:
 
 ```bash
-./scripts/haven doctor
+./scripts/bulkhead doctor
 ```

@@ -78,5 +78,9 @@ check "nothing in the image calls the old name by its full path" "" \
   "$(grep -rnE '/usr/local/bin/haven([^-a-z]|$)' "${ROOT}/docker" | grep -v '/Dockerfile:' \
     | grep -vE '^[^:]+:[0-9]+:[[:space:]]*#' || true)"
 
+DOCS=("${ROOT}/README.md" "${ROOT}/CONTRIBUTING.md" "${ROOT}/SECURITY.md" "${ROOT}/docs" "${ROOT}/.devcontainer" "${ROOT}/.github")
+check "the docs name the command bulkhead" "" \
+  "$(grep -rnE "(^|[^a-zA-Z0-9_./-])haven (${SUBCOMMANDS})([^a-z-]|$)|\./scripts/haven\b" "${DOCS[@]}" || true)"
+
 echo "cli-names: ${PASS} passed, ${FAIL} failed"
 [ "${FAIL}" -eq 0 ]

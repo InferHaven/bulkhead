@@ -51,7 +51,7 @@ Files in `docker/workspace/scripts/` are baked into the image at build time, so 
 | `make down` | Stop all services. |
 | `make rebuild-fast` | Rebuild only the `workspace` service with BuildKit cache. Fastest inner loop. |
 | `make logs s=workspace` | Stream logs for one service. |
-| `make doctor` | Run `haven doctor` inside the workspace (environment diagnostic). |
+| `make doctor` | Run `bulkhead doctor` inside the workspace (environment diagnostic). |
 | `make reset` | **Destructive.** Remove all data volumes and start over. Use when first-boot state is the bug. |
 
 **Resetting state.** If you change first-boot logic (entrypoint, `configure-assistants.sh`, sentinel-gated init), use `make reset` to wipe the `workspace_home` volume so the next `make up` triggers cold-boot again. Warm-boot path skips most provisioning.
@@ -89,7 +89,7 @@ Inside the workspace image (`docker/workspace/scripts/`):
 | `inferhaven-status.sh`, `metrics-server.js` | Status bar. `metrics-server.js` (port 9091) is the canonical source for CPU/RAM/GPU/uptime; `inferhaven-status.sh` is the tmux status-bar consumer. |
 | `haven-models-cache-warm.sh`, `haven-logrotate.sh` | Supercronic-scheduled maintenance jobs. |
 | `haven-migrate-home.sh` | One-shot migration when an old single-user home layout is detected on first boot. |
-| `add-ssh-key.sh` | Helper invoked by `haven ssh-key`. |
+| `add-ssh-key.sh` | Helper invoked by `bulkhead ssh-key`. |
 
 Two operational invariants the codebase enforces:
 
@@ -98,13 +98,13 @@ Two operational invariants the codebase enforces:
 
 ## Adding a new coding-assistant harness
 
-To wire a new harness (the kind of thing you would put in `INSTALL_ASSISTANTS=mytool`) end-to-end, install on first boot, auto-configure Ollama models, keep in sync on `haven pull`/`haven tune`/`haven remove`, and show up in `haven harness`, you need to touch **seven** files. The patterns are tightly enforced; copy what you can from an existing harness rather than freelancing.
+To wire a new harness (the kind of thing you would put in `INSTALL_ASSISTANTS=mytool`) end-to-end, install on first boot, auto-configure Ollama models, keep in sync on `bulkhead pull`/`bulkhead tune`/`bulkhead remove`, and show up in `bulkhead harness`, you need to touch **seven** files. The patterns are tightly enforced; copy what you can from an existing harness rather than freelancing.
 
 ### 1. `docker/workspace/scripts/lib/haven-sync.sh`
 
 Add a `_haven_render_<tool>` function alongside the existing renderers (`_haven_render_opencode`, `_haven_render_pi`, etc.). The function reads the live `/api/tags` model list, queries `/api/show` for per-model `num_ctx`, builds the harness-specific config with `jq -n`, and writes atomically (`> tmp && mv tmp file`, `chmod 600`).
 
-Then register the renderer in `_haven_sync_all` so every `haven pull`/`tune`/`remove` re-renders the new harness in parallel with the others. Do not write a one-off `_sync_<tool>_models` function, the unified driver is the single source of truth.
+Then register the renderer in `_haven_sync_all` so every `bulkhead pull`/`tune`/`remove` re-renders the new harness in parallel with the others. Do not write a one-off `_sync_<tool>_models` function, the unified driver is the single source of truth.
 
 ### 2. `docker/workspace/scripts/haven.sh`
 
@@ -207,9 +207,9 @@ Run the smoke test after any change to the workspace image, the devcontainer con
 **Manual verification checklist.** For non-trivial PRs, walk these by hand:
 
 1. `make reset && make up` → cold boot completes in <60 s on a warm-cache host.
-2. `ssh -p 2222 haven@localhost` → key-only auth works, `haven help` runs.
-3. `haven doctor` → all checks green (P1/P2 binaries, swap, cgroup, supercronic).
-4. `haven pull <model>` → progress reported, model lands in `haven models`, sync re-renders every harness config in `~/.<tool>/`.
+2. `ssh -p 2222 haven@localhost` → key-only auth works, `bulkhead help` runs.
+3. `bulkhead doctor` → all checks green (P1/P2 binaries, swap, cgroup, supercronic).
+4. `bulkhead pull <model>` → progress reported, model lands in `bulkhead models`, sync re-renders every harness config in `~/.<tool>/`.
 5. Web IDE at `http://localhost` → code-server loads, password from `.env` works.
 6. tmux session `Haven` exists, survives a `docker compose restart` (continuum auto-saves every 15 min). Interactive harness panes (opencode, aider, etc.) relaunch cleanly with no leaked keystrokes, `ih-pane-restore` uses `tmux respawn-pane -k` for any pane that had a non-shell foreground process.
 
@@ -223,7 +223,7 @@ InferHaven ships two devcontainer configurations. Every conformant client (GitHu
 | --- | --- | --- | --- |
 | `codespaces` (default) | `.devcontainer/devcontainer.json` | `docker-compose.codespaces.yml`, ollama + model-loader + workspace | Quick CPU-only iteration. Mirrors what Codespaces runs. |
 | `full-stack` | `.devcontainer/full-stack/devcontainer.json` | `docker-compose.yml` + `docker-compose.devcontainer.override.yml`, full prod stack (+ code-server + Caddy) under compose project `inferhaven-dev` | Developing against the same surface self-hosters get, including the web IDE and reverse proxy. GPU works the same way as production. |
-| `nested` (mode, not a separate config) | runs *inside* a prod workspace via `haven devcontainer up <path>` (build-based) or `haven nest up <path>` (compose-based) | Inner copy of any flavor above against the host docker daemon | Validating changes inside a live prod stack without leaving the host. |
+| `nested` (mode, not a separate config) | runs *inside* a prod workspace via `bulkhead devcontainer up <path>` (build-based) or `bulkhead nest up <path>` (compose-based) | Inner copy of any flavor above against the host docker daemon | Validating changes inside a live prod stack without leaving the host. |
 
 **Switching flavors.**
 
@@ -262,26 +262,26 @@ ssh -p 2222 haven@localhost            # in another (needs AUTHORIZED_KEYS set a
 
 **Nested devcontainer (dev-in-prod).** Two helpers, depending on the cloned project's `devcontainer.json` shape:
 
-- **`haven devcontainer up`**: build-based projects (single `image:` / `build:` in `devcontainer.json`, no `dockerComposeFile`). Injects an explicit `workspaceMount` pointing at the translated host path and hands that to `@devcontainers/cli` against the shared docker socket.
-- **`haven nest up`**: compose-based projects, including InferHaven inside InferHaven. Generates a small compose override that rewrites the workspace service's `.` binds to absolute host paths via `/proc/self/mountinfo`, pins the workspace image to the outer's already-built one, and runs `docker compose -p haven-nest-<basename> up -d`.
+- **`bulkhead devcontainer up`**: build-based projects (single `image:` / `build:` in `devcontainer.json`, no `dockerComposeFile`). Injects an explicit `workspaceMount` pointing at the translated host path and hands that to `@devcontainers/cli` against the shared docker socket.
+- **`bulkhead nest up`**: compose-based projects, including InferHaven inside InferHaven. Generates a small compose override that rewrites the workspace service's `.` binds to absolute host paths via `/proc/self/mountinfo`, pins the workspace image to the outer's already-built one, and runs `docker compose -p haven-nest-<basename> up -d`.
 
 ```bash
 # Build-based (example: claude-code, vscode-remote-try-*, microsoft samples):
 git clone https://github.com/microsoft/vscode-remote-try-node ~/projects/try-node
-haven devcontainer up   ~/projects/try-node
-haven devcontainer exec ~/projects/try-node -- node --version
-haven devcontainer down ~/projects/try-node
+bulkhead devcontainer up   ~/projects/try-node
+bulkhead devcontainer exec ~/projects/try-node -- node --version
+bulkhead devcontainer down ~/projects/try-node
 
 # Compose-based (inferhaven-in-inferhaven):
 git clone https://github.com/InferHaven/inferhaven-core ~/projects/inferhaven-dev
-haven nest up   ~/projects/inferhaven-dev                          # codespaces flavor (default)
-haven nest up   ~/projects/inferhaven-dev --flavor full-stack      # full prod stack
-haven nest exec ~/projects/inferhaven-dev -- ls /home/haven/projects/inferhaven-core
-haven nest status all
-haven nest down ~/projects/inferhaven-dev
+bulkhead nest up   ~/projects/inferhaven-dev                          # codespaces flavor (default)
+bulkhead nest up   ~/projects/inferhaven-dev --flavor full-stack      # full prod stack
+bulkhead nest exec ~/projects/inferhaven-dev -- ls /home/haven/projects/inferhaven-core
+bulkhead nest status all
+bulkhead nest down ~/projects/inferhaven-dev
 ```
 
-Each nested stack runs under compose project `haven-nest-<basename>`, so volumes and the bridge network never collide with the outer `inferhaven_*` set. `haven devcontainer help` and `haven nest help` print full subcommand references.
+Each nested stack runs under compose project `haven-nest-<basename>`, so volumes and the bridge network never collide with the outer `inferhaven_*` set. `bulkhead devcontainer help` and `bulkhead nest help` print full subcommand references.
 
 The split exists because `@devcontainers/cli` has no flag to separate "where to read the config" from "what to bind", and docker-compose passes compose-relative `volumes:` entries straight to the daemon, neither tool can resolve inner paths that exist only inside the outer workspace container. The two helpers together close that gap for both project shapes.
 
@@ -297,8 +297,8 @@ The repo + CLI ship defense-in-depth defaults:
 | --- | --- |
 | `.gitignore` | `.env` excluded from commits. |
 | `.dockerignore` | `.env`, `.env.*` (and `caddy-root.crt`, `*.pem`, `*.key`) excluded from every Docker build context, secrets never bake into image layers. |
-| `haven up` (host) | Auto-`chmod 600 .env` on every invocation. Surfaces the previous mode if it had to tighten. |
-| `haven doctor` (host + in-container) | Warns when `.env` is not `600` or `400`. |
+| `bulkhead up` (host) | Auto-`chmod 600 .env` on every invocation. Surfaces the previous mode if it had to tighten. |
+| `bulkhead doctor` (host + in-container) | Warns when `.env` is not `600` or `400`. |
 | `.env.example` header | Calls out the `docker compose config` footgun + the multi-user env-bleed under `HAVEN_EXTRA_USERS`. |
 
 Things to keep in mind when contributing:
@@ -306,4 +306,4 @@ Things to keep in mind when contributing:
 - **Never paste `docker compose config` output.** Use `docker compose config --format json | jq 'del(.services[].environment)'` to inspect non-env structure without leaking keys.
 - **Don't echo env values from any new script.** Redact `*_KEY`, `*_TOKEN`, `*_SECRET`, `*_PASSWORD` patterns in diagnostic prints.
 - **Multi-user (`HAVEN_EXTRA_USERS=alice,bob`) bleeds the haven user's `.env` to alice/bob via `/proc/1/environ`.** If you're running InferHaven as a shared workspace, scope per-user secrets to mounted runtime config files (`~/.haven/secrets/<provider>.env`, mode 600) rather than the global `.env`. (Helper for this is on the roadmap; PRs welcome.)
-- **Backups (`haven backup push`) sync `~/.haven`, `~/.config`, `~/.continue`, `~/.inferhaven`, not the project mount.** The host `.env` is therefore NOT included by default. Confirm before pointing a backup at a remote you don't fully trust.
+- **Backups (`bulkhead backup push`) sync `~/.haven`, `~/.config`, `~/.continue`, `~/.inferhaven`, not the project mount.** The host `.env` is therefore NOT included by default. Confirm before pointing a backup at a remote you don't fully trust.

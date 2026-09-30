@@ -78,5 +78,5 @@ Then in Cursor, just connect to `inferhaven` and the Ollama tunnel is automatica
 **Completions not working:**
 
 - Verify Ollama is reachable: `curl http://localhost:11434/v1/models`
-- Check the model is downloaded: `haven models`
+- Check the model is downloaded: `bulkhead models`
 - Restart Cursor after changing API settings

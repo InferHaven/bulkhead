@@ -102,7 +102,7 @@ API keys (`ANTHROPIC_API_KEY`, etc.) are injected into `~/.inferhaven` (chmod 60
 
 ## Docker socket access
 
-Both the workspace container and the optional cloud agent mount `/var/run/docker.sock`. Any process inside those containers with shell access can control Docker on the host, equivalent to root on the host machine. This is intentional for the `haven service` / `docker compose` workflow but means:
+Both the workspace container and the optional cloud agent mount `/var/run/docker.sock`. Any process inside those containers with shell access can control Docker on the host, equivalent to root on the host machine. This is intentional for the `bulkhead service` / `docker compose` workflow but means:
 
 - SSH access to the workspace = effective host root
 - Protect SSH keys accordingly; rotate immediately if compromised

@@ -48,7 +48,7 @@ claude
 # All file I/O is local. Only prompts and responses go to Anthropic's API.
 
 # Start Claude Code with a selected local model from menu
-haven claude
+bulkhead claude
 ```
 
 ## Privacy Architecture

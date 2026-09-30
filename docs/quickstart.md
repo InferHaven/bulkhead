@@ -9,7 +9,7 @@ Get InferHaven running in 5 minutes.
 - Minimum 8 GB RAM (16 GB+ recommended for larger models)
 - Optional: NVIDIA GPU + Container Toolkit for GPU acceleration (Should work on WSL in Windows)
 
-Not sure if your system is ready? Run `haven doctor` after cloning.
+Not sure if your system is ready? Run `bulkhead doctor` after cloning.
 
 ## Step 1: Clone and configure
 
@@ -69,7 +69,7 @@ docker compose logs -f
 Check everything is up:
 
 ```bash
-./scripts/haven status
+./scripts/bulkhead status
 ```
 
 ## Step 4: Start coding
@@ -78,22 +78,22 @@ From inside the workspace (SSH or web IDE terminal):
 
 ```bash
 # See what models are installed
-haven models
+bulkhead models
 
 # Chat interactively
-haven chat
+bulkhead chat
 
 # Pull additional models (auto-tuned, harness configs updated automatically)
-haven pull llama3.1:8b
-haven pull qwen2.5-coder:7b
+bulkhead pull llama3.1:8b
+bulkhead pull qwen2.5-coder:7b
 
 # Benchmark tokens/sec on your own hardware
 # "generation" is the decode rate (excludes model load + prompt eval) — the honest number.
-haven bench qwen2.5-coder:7b --runs 3     # average of 3 runs (recommended; prompt t/s is noisy on short prompts)
-haven bench qwen2.5-coder:7b --json       # machine-readable, for scripting / sharing
+bulkhead bench qwen2.5-coder:7b --runs 3     # average of 3 runs (recommended; prompt t/s is noisy on short prompts)
+bulkhead bench qwen2.5-coder:7b --json       # machine-readable, for scripting / sharing
 
 # See installed harnesses and OpenCode config
-haven harness
+bulkhead harness
 
 # Use a coding assistant harness, like aider, against a local model
 cd ~/projects/your-repo
@@ -102,7 +102,7 @@ aider --model ollama/qwen2.5-coder:7b
 
 ## What's next?
 
-- **[Workspace reference](workspace.md)**: model tuning, background downloads, bare-metal-equivalent tools (lazygit, delta, direnv, zoxide, eza, mise, atuin, tmate), `haven service|limits|gpu-info`, multi-user, dotfiles bootstrap, backup
+- **[Workspace reference](workspace.md)**: model tuning, background downloads, bare-metal-equivalent tools (lazygit, delta, direnv, zoxide, eza, mise, atuin, tmate), `bulkhead service|limits|gpu-info`, multi-user, dotfiles bootstrap, backup
 - **[Harnesses & model recommendations](harnesses.md)**: per-harness setup and model tables
 - **[GPU setup](gpu-setup.md)**: run larger, faster models
 - **IDE integrations**: [Continue.dev](ide/continue.md), [Cline](ide/cline.md), [Cursor](ide/cursor.md), [avante.nvim](ide/avante-nvim.md)

@@ -104,7 +104,7 @@ aider --model ollama/qwen2.5-coder:7b src/auth.py src/models/user.py tests/
 
 - Inside workspace: Check `$OLLAMA_HOST` is set (`echo $OLLAMA_HOST`)
 - From local: Verify SSH tunnel is running
-- Check Ollama is up: `haven status`
+- Check Ollama is up: `bulkhead status`
 
 **Slow generation:**
 

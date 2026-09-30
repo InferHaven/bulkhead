@@ -52,8 +52,8 @@ InferHaven is your own private AI coding server: a self-hostable Docker stack th
 - **Real security**: leverages Docker for a secure dev environment; SSH is key-only
 - **Fast, reproducible builds**: BuildKit cache mounts make warm rebuilds < 30s
 - **Multi-user**: provision extra users with their own SSH keys via `.env`
-- **Devcontainer-ready**: works with VS Code Dev Containers, GitHub Codespaces, DevPod, JetBrains Gateway, and headless `@devcontainers/cli`. Two flavors ship: a lightweight Codespaces flavor for CPU-only quickstarts and a full-stack flavor that boots the same production services (web IDE + Caddy) with optional GPU passthrough. Nested devcontainers (dev-in-prod) supported via the `haven devcontainer` command.
-- **Backup & restore**: `haven backup configure` sets up an rclone remote interactively; `haven backup push <remote:path>` snapshots home directory and harness configs.
+- **Devcontainer-ready**: works with VS Code Dev Containers, GitHub Codespaces, DevPod, JetBrains Gateway, and headless `@devcontainers/cli`. Two flavors ship: a lightweight Codespaces flavor for CPU-only quickstarts and a full-stack flavor that boots the same production services (web IDE + Caddy) with optional GPU passthrough. Nested devcontainers (dev-in-prod) supported via the `bulkhead devcontainer` command.
+- **Backup & restore**: `bulkhead backup configure` sets up an rclone remote interactively; `bulkhead backup push <remote:path>` snapshots home directory and harness configs.
 
 ## Why not just wire it up myself?
 
@@ -105,8 +105,8 @@ All configuration lives in `.env` (copy from `.env.example`).
 | `OLLAMA_PORT` | `11434` | Ollama API port |
 | `INSTALL_ASSISTANTS` | *(empty)* | Harnesses to auto-install on first boot |
 | `HAVEN_CTX` | `32768` | Context window target for auto-tune on pull. Use `16384` on memory-constrained hardware |
-| `HAVEN_AUTO_TUNE` | `1` | Auto-run `haven tune` after every pull / pullback and for `DEFAULT_MODEL` on boot. Set `0` to disable |
-| `HAVEN_FORCE_FAMILY` | *(empty)* | Bypass family detection in `haven tune`. Values: `qwen3` `qwen25` `llama3` `deepseek` `mistral` `phi4` `codellama` `gemma`. Use for custom finetunes you know are template-compatible |
+| `HAVEN_AUTO_TUNE` | `1` | Auto-run `bulkhead tune` after every pull / pullback and for `DEFAULT_MODEL` on boot. Set `0` to disable |
+| `HAVEN_FORCE_FAMILY` | *(empty)* | Bypass family detection in `bulkhead tune`. Values: `qwen3` `qwen25` `llama3` `deepseek` `mistral` `phi4` `codellama` `gemma`. Use for custom finetunes you know are template-compatible |
 | `GOOSE_CTX_LIMIT` | `32768` | Maximum context passed to Goose sessions. Caps the KV-cache budget regardless of model tuning; reduce to `16384` if you see 30 s stream stalls on constrained hardware |
 | `ANTHROPIC_API_KEY` | *(empty)* | For Claude Code, Aider (claude backend), Amp |
 | `OPENAI_API_KEY` | *(empty)* | For OpenCode, Aider (openai backend) |
@@ -132,7 +132,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 Supported Harnesses: `claudecode`, `opencode`, `aider`, `qwencode`, `amp`, `gemini`, `pi`, `goose`, `continue`, `avante`
 
-When `opencode`, `aider`, `qwencode`, `pi`, `goose`, `continue`, or `avante` is included, local Ollama models are auto-configured and kept in sync: every `haven pull`, `haven tune`, and `haven remove` updates all harness configs immediately. Most harnesses use an internal sentinel so InferHaven never touches user-customised configs; `continue` syncs whenever `cn` is installed (opt out: `touch ~/.continue/.no-autosync`).
+When `opencode`, `aider`, `qwencode`, `pi`, `goose`, `continue`, or `avante` is included, local Ollama models are auto-configured and kept in sync: every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove` updates all harness configs immediately. Most harnesses use an internal sentinel so InferHaven never touches user-customised configs; `continue` syncs whenever `cn` is installed (opt out: `touch ~/.continue/.no-autosync`).
 
 See **[docs/harnesses.md](docs/harnesses.md)** for opt-out, per-project override instructions, and for per-harness setup details and recommended models.
 
@@ -158,117 +158,117 @@ ssh-ed25519 AAAA...key2 user2@host"
 **From the host** (repo directory) manages Docker services:
 
 ```bash
-./scripts/haven up                   # start all services
-./scripts/haven down                 # stop all services
-./scripts/haven restart              # restart all services
-./scripts/haven logs                 # stream logs (all services)
-./scripts/haven logs ollama          # stream logs for a specific service
-./scripts/haven update               # pull latest images and restart
-./scripts/haven reset                # remove all data (careful)
-./scripts/haven status               # service status
-./scripts/haven doctor               # diagnose the host environment
-./scripts/haven ssh-key "<pubkey>"   # add an SSH public key
-./scripts/haven ssh                  # show SSH connection command
-./scripts/haven ide                  # show web IDE URL
+./scripts/bulkhead up                   # start all services
+./scripts/bulkhead down                 # stop all services
+./scripts/bulkhead restart              # restart all services
+./scripts/bulkhead logs                 # stream logs (all services)
+./scripts/bulkhead logs ollama          # stream logs for a specific service
+./scripts/bulkhead update               # pull latest images and restart
+./scripts/bulkhead reset                # remove all data (careful)
+./scripts/bulkhead status               # service status
+./scripts/bulkhead doctor               # diagnose the host environment
+./scripts/bulkhead ssh-key "<pubkey>"   # add an SSH public key
+./scripts/bulkhead ssh                  # show SSH connection command
+./scripts/bulkhead ide                  # show web IDE URL
 ```
 
 **Inside the workspace** (after SSH-ing in): full feature set:
 
 ```bash
 # Models
-haven models                            # list downloaded models
-haven pull <model>                      # download a model (foreground, with live progress)
-haven pullback <model>                  # download a model in the background — keep working
-haven pullback status                   # show all background download progress
-haven pullback cancel <model>           # cancel a background download
-haven remove <model>                    # remove a model (updates harness configs)
-haven show <model>                      # model details: params, template, system prompt
-haven show <model> --modelfile          # print raw Modelfile
-haven ps                                # models currently loaded in GPU/RAM
-haven unload <model>                    # force-unload from GPU/RAM
-haven cp <src> <dest>                   # copy / rename a model
-haven chat [model]                      # interactive chat (defaults to DEFAULT_MODEL)
-haven run <model>                       # same as chat — TTY interactive session
-haven run <model> "your prompt"         # one-shot: print response and exit (scriptable)
-echo "prompt" | haven run <model>       # pipe stdin into model
-haven bench [model]                     # benchmark tokens/sec (--tokens N --prompt ".." --runs K --json)
+bulkhead models                            # list downloaded models
+bulkhead pull <model>                      # download a model (foreground, with live progress)
+bulkhead pullback <model>                  # download a model in the background — keep working
+bulkhead pullback status                   # show all background download progress
+bulkhead pullback cancel <model>           # cancel a background download
+bulkhead remove <model>                    # remove a model (updates harness configs)
+bulkhead show <model>                      # model details: params, template, system prompt
+bulkhead show <model> --modelfile          # print raw Modelfile
+bulkhead ps                                # models currently loaded in GPU/RAM
+bulkhead unload <model>                    # force-unload from GPU/RAM
+bulkhead cp <src> <dest>                   # copy / rename a model
+bulkhead chat [model]                      # interactive chat (defaults to DEFAULT_MODEL)
+bulkhead run <model>                       # same as chat — TTY interactive session
+bulkhead run <model> "your prompt"         # one-shot: print response and exit (scriptable)
+echo "prompt" | bulkhead run <model>       # pipe stdin into model
+bulkhead bench [model]                     # benchmark tokens/sec (--tokens N --prompt ".." --runs K --json)
 
 # ollama.com account
-haven push <model>                      # push a model to ollama.com
-haven signin                            # authenticate with ollama.com
-haven signout                           # sign out of ollama.com
+bulkhead push <model>                      # push a model to ollama.com
+bulkhead signin                            # authenticate with ollama.com
+bulkhead signout                           # sign out of ollama.com
 
 # Model parameters (instant — no re-download)
-haven params <model>                            # show current parameters
-haven params <model> set num_ctx 32768          # context window size
-haven params <model> set temperature 0.3        # creativity (0.0–2.0)
-haven params <model> set num_predict 4096       # max tokens (-1 = unlimited)
-haven params <model> set top_p 0.9              # nucleus sampling threshold
-haven params <model> set top_k 40               # top-k candidates per step
-haven params <model> set repeat_penalty 1.1     # penalise repeated tokens
-haven params <model> reset                      # reset all params to defaults
+bulkhead params <model>                            # show current parameters
+bulkhead params <model> set num_ctx 32768          # context window size
+bulkhead params <model> set temperature 0.3        # creativity (0.0–2.0)
+bulkhead params <model> set num_predict 4096       # max tokens (-1 = unlimited)
+bulkhead params <model> set top_p 0.9              # nucleus sampling threshold
+bulkhead params <model> set top_k 40               # top-k candidates per step
+bulkhead params <model> set repeat_penalty 1.1     # penalise repeated tokens
+bulkhead params <model> reset                      # reset all params to defaults
 
 # Model tuning (no re-download — sets num_ctx, stop tokens, template per family)
-haven tune <model>                      # optimise for harness use
+bulkhead tune <model>                      # optimise for harness use
 # Families: qwen2.5 · qwen3 · llama3 · deepseek · mistral · phi4 · codellama
 
 # Harnesses
-haven harness                           # show installed harnesses + OpenCode config summary
-haven claude                            # launch Claude Code with a local Ollama model
-haven aider                             # launch Aider with a local Ollama model
-haven goose                             # launch Goose with a local Ollama model
-haven qwen                              # launch Qwen Code with a local Ollama model
+bulkhead harness                           # show installed harnesses + OpenCode config summary
+bulkhead claude                            # launch Claude Code with a local Ollama model
+bulkhead aider                             # launch Aider with a local Ollama model
+bulkhead goose                             # launch Goose with a local Ollama model
+bulkhead qwen                              # launch Qwen Code with a local Ollama model
 
 # Status & diagnostics
-haven status                            # service status + model count
-haven logs [service]                    # stream service logs
-haven doctor                            # diagnose the container environment (incl. P1/P2 binaries, swap, cgroup)
-haven service <name> <action>           # docker compose wrapper: status / restart / stop / start / logs
-haven limits                            # show container cgroup limits vs host capacity (memory/CPU/swap)
-haven gpu-info                          # canonical GPU readout from the metrics-server (driver, util, VRAM)
+bulkhead status                            # service status + model count
+bulkhead logs [service]                    # stream service logs
+bulkhead doctor                            # diagnose the container environment (incl. P1/P2 binaries, swap, cgroup)
+bulkhead service <name> <action>           # docker compose wrapper: status / restart / stop / start / logs
+bulkhead limits                            # show container cgroup limits vs host capacity (memory/CPU/swap)
+bulkhead gpu-info                          # canonical GPU readout from the metrics-server (driver, util, VRAM)
 
 # Pair-programming + backup (P2)
-haven tmate                             # start a backgrounded tmate session — prints SSH/web URLs
-haven tmate status                      # print current tmate URLs + uptime
-haven tmate fg                          # attach to the active tmate session
-haven tmate kill                        # tear down the tmate session
-haven backup configure                  # interactive rclone remote setup wizard
-haven backup status                     # show local backup paths + configured rclone remotes
-haven backup status <remote:path>       # also show size + top-level contents of that remote
-haven backup push <remote:path>         # snapshot ~/.haven + ~/.config + ~/.continue to an rclone remote
-haven backup pull <remote:path>         # restore from an rclone remote
+bulkhead tmate                             # start a backgrounded tmate session — prints SSH/web URLs
+bulkhead tmate status                      # print current tmate URLs + uptime
+bulkhead tmate fg                          # attach to the active tmate session
+bulkhead tmate kill                        # tear down the tmate session
+bulkhead backup configure                  # interactive rclone remote setup wizard
+bulkhead backup status                     # show local backup paths + configured rclone remotes
+bulkhead backup status <remote:path>       # also show size + top-level contents of that remote
+bulkhead backup push <remote:path>         # snapshot ~/.haven + ~/.config + ~/.continue to an rclone remote
+bulkhead backup pull <remote:path>         # restore from an rclone remote
 
 # Tool-config sync (re-render coding-assistant configs from the live model list)
-haven sync                              # re-sync all 7 supported tools in parallel
-haven sync <tool>                       # opencode | aider | qwencode | pi | goose | continue | avante
-haven sync list                         # list supported tools
+bulkhead sync                              # re-sync all 7 supported tools in parallel
+bulkhead sync <tool>                       # opencode | aider | qwencode | pi | goose | continue | avante
+bulkhead sync list                         # list supported tools
 
 # Tmux workspace (sessions auto-save every 15 min, fully restored after restarts)
-haven tmux                              # attach to the always-running 'Haven' session
-haven tmux attach [name]                # attach to a session (default: Haven)
-haven tmux ls                           # list all active sessions
-haven tmux new <name>                   # create and attach to a new named session
-haven tmux kill <name>                  # kill a session
-haven tmux save                         # manually save sessions to disk
-haven tmux restore                      # manually restore from last save
-haven tmux plugin list                  # list installed plugins
-haven tmux plugin install               # install plugins from ~/.tmux.conf
-haven tmux plugin update                # update all plugins
-haven tmux plugin bootstrap             # reinstall all plugins from scratch
-haven tmux help                         # full subcommand reference
+bulkhead tmux                              # attach to the always-running 'Haven' session
+bulkhead tmux attach [name]                # attach to a session (default: Haven)
+bulkhead tmux ls                           # list all active sessions
+bulkhead tmux new <name>                   # create and attach to a new named session
+bulkhead tmux kill <name>                  # kill a session
+bulkhead tmux save                         # manually save sessions to disk
+bulkhead tmux restore                      # manually restore from last save
+bulkhead tmux plugin list                  # list installed plugins
+bulkhead tmux plugin install               # install plugins from ~/.tmux.conf
+bulkhead tmux plugin update                # update all plugins
+bulkhead tmux plugin bootstrap             # reinstall all plugins from scratch
+bulkhead tmux help                         # full subcommand reference
 
 # Packages (persist across container restarts)
-haven apt install <pkg...>              # install and track apt packages
-haven apt remove <pkg...>              # stop tracking a package
-haven apt list                          # show tracked packages
-haven apt update                        # refresh package lists
-haven apt upgrade                       # upgrade all tracked packages
+bulkhead apt install <pkg...>              # install and track apt packages
+bulkhead apt remove <pkg...>              # stop tracking a package
+bulkhead apt list                          # show tracked packages
+bulkhead apt update                        # refresh package lists
+bulkhead apt upgrade                       # upgrade all tracked packages
 
 # SSH / IDE
-haven ssh-key "<pubkey>"               # add an SSH public key
-haven ssh                               # show SSH connection command
-haven ide                               # show web IDE URL
-haven help                              # show all commands
+bulkhead ssh-key "<pubkey>"               # add an SSH public key
+bulkhead ssh                               # show SSH connection command
+bulkhead ide                               # show web IDE URL
+bulkhead help                              # show all commands
 ```
 
 For workspace-specific features (model tuning, background downloads, Starship prompt, persistent packages, and status bar alerts), see **[docs/workspace.md](docs/workspace.md)**.

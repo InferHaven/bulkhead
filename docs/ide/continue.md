@@ -14,7 +14,7 @@ This configures InferHaven to:
 
 1. Install the `@continuedev/cli` package globally in the **workspace** container (so `cn` is on `PATH` for the `haven` SSH user).
 2. Write `~/.continue/config.yaml` listing every installed Ollama model + any cloud providers you've configured in `.env`.
-3. Re-sync that file after every `haven pull`, `haven tune`, and `haven remove`.
+3. Re-sync that file after every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove`.
 
 That's it. Nothing is installed into the code-server browser editor, InferHaven does not modify your IDE's extension state.
 
@@ -42,7 +42,7 @@ The managed config has a `# _haven: user-models` sentinel near the bottom. Add a
 The `cn` CLI requires a one-time login with a Continue.dev account on first run, this is a Continue CLI requirement unrelated to which models or API keys are configured. After authenticating once, the session token is stored in `~/.continue/` on the `workspace_home` volume and persists across container restarts.
 
 ```bash
-# From inside the workspace (after SSH or via `haven tmux`)
+# From inside the workspace (after SSH or via `bulkhead tmux`)
 cn -p "explain the function in src/foo.ts"
 ```
 
@@ -168,23 +168,23 @@ models:
 
 **"Connection refused" from `cn` or the IDE extension:**
 
-- Make sure InferHaven is running: `haven status`
+- Make sure InferHaven is running: `bulkhead status`
 - Check Ollama: `curl http://localhost:11434/api/tags`
 - If remote, verify your SSH tunnel.
 
 **Slow responses:**
 
 - Large models on CPU are slow, pick smaller quant for CPU, 32B+ for GPU.
-- Check resources inside the workspace: `htop`, `haven gpu-info`.
+- Check resources inside the workspace: `htop`, `bulkhead gpu-info`.
 
 **Model not found:**
 
-- Pull first: `haven pull qwen2.5-coder:7b-instruct-q4_K_M`
-- Verify: `haven models`
+- Pull first: `bulkhead pull qwen2.5-coder:7b-instruct-q4_K_M`
+- Verify: `bulkhead models`
 
 **After `cn` login, only cloud models appear:**
 
-- If you logged in to Continue Hub interactively, Continue may have rewritten `config.yaml`. Run `haven pull <any-model>` to restore, InferHaven rebuilds the full config (Ollama + any cloud keys from `.env`).
+- If you logged in to Continue Hub interactively, Continue may have rewritten `config.yaml`. Run `bulkhead pull <any-model>` to restore, InferHaven rebuilds the full config (Ollama + any cloud keys from `.env`).
 
 **PostHog network errors in the terminal** (`ERR_TLS_CERT_ALTNAME_INVALID` / `app.posthog.com`):
 

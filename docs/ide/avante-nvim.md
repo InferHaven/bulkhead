@@ -17,7 +17,7 @@ InferHaven automatically:
 - Installs avante.nvim via lazy.nvim with a minimal Neovim config (won't touch an existing `init.lua`)
 - Writes a multi-provider sidecar with all installed Ollama models + any configured cloud providers
 - Installs the `avante` command for Zen Mode access
-- Keeps the full model list in sync after every `haven pull`, `haven tune`, and `haven remove`
+- Keeps the full model list in sync after every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove`
 
 After the container starts:
 
@@ -102,7 +102,7 @@ Example sidecar with two local models and all cloud providers configured:
 
 ```lua
 -- _haven: managed
--- InferHaven rewrites this file on model sync (haven pull/tune/remove).
+-- InferHaven rewrites this file on model sync (bulkhead pull/tune/remove).
 -- Remove the first line above to manage this file yourself.
 return {
   provider = "ollama",   -- default: always local-first (most-recent pull)
@@ -153,7 +153,7 @@ API keys are exported automatically via `~/.inferhaven`, no extra configuration 
 
 ## Customizing without losing your changes
 
-InferHaven rewrites `inferhaven-avante-config.lua` on every `haven pull`, `haven tune`, and `haven remove` to keep the full model list current. Three levels of control:
+InferHaven rewrites `inferhaven-avante-config.lua` on every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove` to keep the full model list current. Three levels of control:
 
 **Change a cloud model** (e.g. swap `claude-sonnet-4-6` for `claude-opus-4-5`): edit the `model = "..."` value in the managed section, the changed value is carried forward on every sync.
 
@@ -183,7 +183,7 @@ InferHaven rewrites `inferhaven-avante-config.lua` on every `haven pull`, `haven
 **Timeout errors:**
 
 - Larger models take longer on first load, `timeout = 120000` is set by default in the managed sidecar
-- Check `haven ps` to see if a model is currently loaded in GPU/RAM
+- Check `bulkhead ps` to see if a model is currently loaded in GPU/RAM
 
 **Plugin not loading:**
 
@@ -200,8 +200,8 @@ If you still see stalls after a rebuild, verify the managed sidecar has the corr
 grep '__inherited_from\|endpoint' ~/.config/nvim/lua/inferhaven-avante-config.lua
 ```
 
-Should show `__inherited_from   = "openai"` and `endpoint = "http://ollama:11434/v1"`. If it shows the old format (no `__inherited_from`), run `haven pull <model>` to trigger a sidecar rewrite.
+Should show `__inherited_from   = "openai"` and `endpoint = "http://ollama:11434/v1"`. If it shows the old format (no `__inherited_from`), run `bulkhead pull <model>` to trigger a sidecar rewrite.
 
 **Models that show thinking tokens (`<think>...</think>`) in chat (qwen3 family):**
 
-qwen3 models enable extended reasoning by default and stream thinking tokens into the response. Avante displays these as part of the output. This is model behavior, not an InferHaven issue. To suppress thinking, add `/no_think` at the start of your first message, or tune the model to disable thinking: `haven params <model> set thinking false` (if supported by your Ollama version).
+qwen3 models enable extended reasoning by default and stream thinking tokens into the response. Avante displays these as part of the output. This is model behavior, not an InferHaven issue. To suppress thinking, add `/no_think` at the start of your first message, or tune the model to disable thinking: `bulkhead params <model> set thinking false` (if supported by your Ollama version).
