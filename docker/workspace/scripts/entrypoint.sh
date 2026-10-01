@@ -182,7 +182,7 @@ _provision_extra_user() (
     cat > "${home}/.inferhaven" << EOF
 # Bulkhead environment (extra user: ${user})
 export OLLAMA_HOST="${OLLAMA_HOST:-http://ollama:11434}"
-export INFERHAVEN_VERSION="0.1.0"
+export INFERHAVEN_VERSION="0.2.0"
 EOF
     chown "${user}:${user}" "${home}/.inferhaven" 2>/dev/null
     chmod 600 "${home}/.inferhaven" 2>/dev/null

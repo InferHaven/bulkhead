@@ -453,6 +453,6 @@ This deletes all models, projects, and settings. Back up `~/projects` first if n
 ## Still stuck?
 
 1. Run `bulkhead doctor` for automated diagnostics
-2. Check the [GitHub Issues](https://github.com/InferHaven/inferhaven-core/issues)
+2. Check the [GitHub Issues](https://github.com/InferHaven/bulkhead/issues)
 3. Join the [Discord](https://discord.gg/X5htGNnEh5) community
 4. Open a new issue with `bulkhead doctor` output and relevant logs

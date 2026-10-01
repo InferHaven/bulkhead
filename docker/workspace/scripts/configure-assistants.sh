@@ -81,7 +81,7 @@ fi
 
 # Always sync OLLAMA_HOST and version (may change between starts)
 set_inferhaven_var "OLLAMA_HOST"          "${OLLAMA_HOST:-http://ollama:11434}"
-set_inferhaven_var "INFERHAVEN_VERSION"   "0.1.0"
+set_inferhaven_var "INFERHAVEN_VERSION"   "0.2.0"
 # OLLAMA_OPENAI_KEY satisfies avante's api_key_name check for the Ollama provider.
 # avante's __inherited_from="openai" provider requires a non-empty env var as an
 # API key placeholder — Ollama ignores the Authorization header it sends.

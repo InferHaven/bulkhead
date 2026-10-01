@@ -8,9 +8,9 @@ body:
         Thanks for taking the time to file a bug — a clear report is one of the most useful contributions to the project.
 
         **Before you file:**
-        - This tracker is for **inferhaven-core** (the self-hostable Docker stack).
-        - **Security vulnerability?** Do **not** open a public issue. Follow the [Security Policy](https://github.com/InferHaven/inferhaven-core/blob/main/SECURITY.md) (email `lookout@inferhaven.com`, PGP available).
-        - Please [search existing issues](https://github.com/InferHaven/inferhaven-core/issues) first to avoid duplicates.
+        - This tracker is for **Bulkhead** (the self-hostable Docker stack).
+        - **Security vulnerability?** Do **not** open a public issue. Follow the [Security Policy](https://github.com/InferHaven/bulkhead/blob/main/SECURITY.md) (email `lookout@inferhaven.com`, PGP available).
+        - Please [search existing issues](https://github.com/InferHaven/bulkhead/issues) first to avoid duplicates.
   - type: textarea
     id: what-happened
     attributes:
@@ -67,7 +67,7 @@ body:
     id: version
     attributes:
       label: Version / commit
-      description: Release tag, commit SHA, or `inferhaven-core` image tag.
+      description: Release tag, commit SHA, or the output of `bulkhead version`.
     validations:
       required: true
   - type: input

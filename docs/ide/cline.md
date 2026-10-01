@@ -74,7 +74,7 @@ Cline drives agentic loops, it needs reliable tool use and a context window larg
 Pull a model before connecting:
 
 ```bash
-# Within inferhaven-core/
+# Within bulkhead/
 bulkhead pull qwen2.5-coder:14b
 ```
 

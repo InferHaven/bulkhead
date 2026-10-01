@@ -7,7 +7,7 @@
 ### Option A: Pre-configure in .env (recommended)
 
 ```bash
-# In your inferhaven-core/.env file:
+# In your bulkhead/.env file:
 INSTALL_ASSISTANTS=aider
 
 # Optional: set an API key for cloud backends

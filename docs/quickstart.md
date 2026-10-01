@@ -14,8 +14,8 @@ Not sure if your system is ready? Run `bulkhead doctor` after cloning.
 ## Step 1: Clone and configure
 
 ```bash
-git clone https://github.com/InferHaven/inferhaven-core.git
-cd inferhaven-core
+git clone https://github.com/InferHaven/bulkhead.git
+cd bulkhead
 cp .env.example .env
 chmod 600 .env
 ```

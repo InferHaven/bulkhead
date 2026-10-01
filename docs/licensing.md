@@ -61,7 +61,7 @@ A few worked examples:
 | You stand up `managedinferhaven.com` and rent hosted Bulkhead instances to anyone with a credit card. | **Yes**, this is the exact use case the license restricts. |
 | You build a SaaS product that uses Core internally for inference but exposes a completely different product to your users. | **Probably no**, unless that product's value proposition substantially overlaps with Bulkhead Cloud's. If you're unsure, ask. |
 
-If you're not sure whether your use case is permitted, [open a Discussion](https://github.com/InferHaven/inferhaven-core/discussions), we'd rather give you a clear answer up front than have you build something on shaky ground.
+If you're not sure whether your use case is permitted, [open a Discussion](https://github.com/InferHaven/bulkhead/discussions), we'd rather give you a clear answer up front than have you build something on shaky ground.
 
 ## The Two-Year Rollover
 
@@ -79,4 +79,4 @@ This is the "we eventually give it all away" property. We get a two-year commerc
 
 ## Questions
 
-Open a [Discussion](https://github.com/InferHaven/inferhaven-core/discussions) on GitHub if anything here is unclear, or if your use case doesn't fit cleanly into the examples above. We're happy to give you a straight answer.
+Open a [Discussion](https://github.com/InferHaven/bulkhead/discussions) on GitHub if anything here is unclear, or if your use case doesn't fit cleanly into the examples above. We're happy to give you a straight answer.

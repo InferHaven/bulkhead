@@ -3,7 +3,7 @@
 We take the security of Bulkhead seriously. Thank you for helping keep
 Bulkhead and its users safe.
 
-This policy covers **inferhaven-core** (the self-hostable Docker stack). For
+This policy covers **Bulkhead** (the self-hostable Docker stack). For
 operational hardening guidance (access control, network exposure, TLS, secrets,
 and the deliberate trust boundaries of the stack), see
 [`docs/security.md`](docs/security.md). Reading that document first will help you
@@ -93,8 +93,8 @@ gpg --lsign-key 499280D5D75E3A4F837C6A6885D8E0970D05CEC0
 
 A good report lets us reproduce and triage quickly. Where possible, include:
 
-- **Affected version(s)**: release tag, commit SHA, or `inferhaven-core`
-  Docker image tag.
+- **Affected version(s)**: release tag, commit SHA, or the output of
+  `bulkhead version`.
 - **Component**: e.g. `workspace`, `code-server`, `caddy` config, a `haven`
   script, the optional cloud agent, or the entrypoint/sync logic.
 - **Clear description and impact**: what an attacker can do, and under what
@@ -112,7 +112,7 @@ repository:
 
 - The Docker stack as defined in `docker-compose.yml` and the
   `docker/` build files (`workspace`, `caddy`, etc.).
-- The `haven` CLI and the `scripts/` it sources (entrypoint, sync driver,
+- The `bulkhead` CLI and the `scripts/` it sources (entrypoint, sync driver,
   backup, tmate, tune, and related logic).
 - The default Caddy routing and TLS configuration in `docker/caddy/`.
 - The optional cloud agent service (`--profile cloud`) as built and configured

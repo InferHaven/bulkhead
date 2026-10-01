@@ -2,7 +2,7 @@
 
 This is the contributor-facing documentation for Bulkhead. If you want to *use* Bulkhead, start at the [top-level README](../../README.md) and [docs/quickstart.md](../quickstart.md) instead.
 
-Bulkhead is, deliberately, a small project: a Docker Compose stack, a Bash CLI (`haven`), a handful of provisioning and lifecycle scripts, and a status-bar daemon. There is no application framework, no test pyramid, no compile step. If you are comfortable with Bash, Docker, and Make, you have everything you need.
+Bulkhead is, deliberately, a small project: a Docker Compose stack, a Bash CLI (`bulkhead`), a handful of provisioning and lifecycle scripts, and a status-bar daemon. There is no application framework, no test pyramid, no compile step. If you are comfortable with Bash, Docker, and Make, you have everything you need.
 
 ## Contents
 
@@ -20,8 +20,8 @@ Bulkhead is, deliberately, a small project: a Docker Compose stack, a Bash CLI (
 **First-time setup.**
 
 ```bash
-git clone https://github.com/InferHaven/inferhaven-core.git
-cd inferhaven-core
+git clone https://github.com/InferHaven/bulkhead.git
+cd bulkhead
 cp .env.example .env
 # Edit .env — at minimum set CODE_SERVER_PASSWORD and AUTHORIZED_KEYS.
 # If you are testing GPU paths, also uncomment the GPU block in docker-compose.yml.
@@ -30,7 +30,7 @@ make up
 
 `make up` builds the workspace image (BuildKit cache mounts make warm rebuilds <30 s) and starts the four services: `ollama`, `workspace`, `code-server`, `caddy`.
 
-**The iteration loop.** Most contributions touch the workspace container, either the `haven` CLI or one of the provisioning scripts. The loop:
+**The iteration loop.** Most contributions touch the workspace container, either the `bulkhead` CLI or one of the provisioning scripts. The loop:
 
 ```bash
 # 1. Edit files under docker/workspace/scripts/ (or wherever you are working).
@@ -59,7 +59,7 @@ Files in `docker/workspace/scripts/` are baked into the image at build time, so 
 ## Repository layout
 
 ```bash
-inferhaven-core/
+bulkhead/
 ├── Makefile                          # Thin wrapper over docker compose
 ├── docker-compose.yml                # 4-service stack: ollama, workspace, code-server, caddy
 ├── docker-compose.codespaces.yml     # Codespaces-tuned variant
@@ -80,7 +80,7 @@ Inside the workspace image (`docker/workspace/scripts/`):
 
 | Path | Role |
 | --- | --- |
-| `haven.sh` | The workspace-internal `haven` CLI. ~75 subcommands across models, harnesses, tmux, services. |
+| `haven.sh` | The workspace-internal `bulkhead` CLI. ~75 subcommands across models, harnesses, tmux, services. |
 | `lib/haven-sync.sh` | Unified config-sync driver. One `_haven_sync_all` function renders Ollama models into every supported harness config in parallel. Replaces the seven former `_sync_*_models` functions. |
 | `lib/haven-models.sh`, `lib/haven-log.sh`, `lib/haven-colors.sh` | Helper libraries sourced by `haven.sh`. |
 | `entrypoint.sh` | Container entrypoint. Sentinel-gated (`~/.haven/.initialized`), cold boot does full provisioning, warm boot skips. |
@@ -94,7 +94,7 @@ Inside the workspace image (`docker/workspace/scripts/`):
 Two operational invariants the codebase enforces:
 
 - **Sentinel gating.** First-boot work runs only if `~/.haven/.initialized` is missing. Cold-boot reason (sentinel missing vs. ownership drift) is logged. Restarts must stay under ~5 s wall time, which is what the bounded shutdown trap (`timeout 3` on tmux save) protects.
-- **Managed-file sentinels.** Every config file `haven` writes carries a sentinel (`"_haven": "managed"`, `"_haven": true` per array entry, or `## inferhaven:managed` for YAML). Sync functions must check the sentinel and exit early if it is absent, Bulkhead never overwrites user-customised configs.
+- **Managed-file sentinels.** Every config file `bulkhead` writes carries a sentinel (`"_haven": "managed"`, `"_haven": true` per array entry, or `## inferhaven:managed` for YAML). Sync functions must check the sentinel and exit early if it is absent, Bulkhead never overwrites user-customised configs.
 
 ## Adding a new coding-assistant harness
 
@@ -273,7 +273,7 @@ bulkhead devcontainer exec ~/projects/try-node -- node --version
 bulkhead devcontainer down ~/projects/try-node
 
 # Compose-based (inferhaven-in-inferhaven):
-git clone https://github.com/InferHaven/inferhaven-core ~/projects/inferhaven-dev
+git clone https://github.com/InferHaven/bulkhead ~/projects/inferhaven-dev
 bulkhead nest up   ~/projects/inferhaven-dev                          # codespaces flavor (default)
 bulkhead nest up   ~/projects/inferhaven-dev --flavor full-stack      # full prod stack
 bulkhead nest exec ~/projects/inferhaven-dev -- ls /home/haven/projects/inferhaven-core

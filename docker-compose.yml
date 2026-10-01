@@ -13,7 +13,7 @@
 #   workspace    — Terminal-first dev environment (SSH/tmux)
 #   caddy        — Reverse proxy with automatic HTTPS
 #
-# Documentation: https://github.com/InferHaven/inferhaven-core
+# Documentation: https://github.com/InferHaven/bulkhead
 ###############################################################################
 
 name: inferhaven

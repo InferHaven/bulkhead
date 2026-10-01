@@ -95,7 +95,7 @@ bulkhead devcontainer down ~/projects/claude-code
 
 ```bash
 # Inside the outer workspace
-git clone https://github.com/InferHaven/inferhaven-core ~/projects/inferhaven-dev
+git clone https://github.com/InferHaven/bulkhead ~/projects/inferhaven-dev
 bulkhead nest up   ~/projects/inferhaven-dev                        # codespaces flavor (default)
 bulkhead nest up   ~/projects/inferhaven-dev --flavor full-stack    # full-stack flavor
 bulkhead nest exec ~/projects/inferhaven-dev -- ls /home/haven/projects/inferhaven-core
