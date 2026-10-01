@@ -2,14 +2,14 @@
         rebuild-fast doctor backup limits gpu-info
 
 COMPOSE := docker compose
-HAVEN := ./scripts/haven
+BULKHEAD := ./scripts/bulkhead
 export DOCKER_BUILDKIT := 1
 export COMPOSE_BAKE := true
 
 # ── Quick Start ─────────────────────────────────────────────────────────────
 help: ## Show this help
 	@echo ""
-	@echo "  InferHaven Core — Makefile"
+	@echo "  Bulkhead — Makefile"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -68,14 +68,14 @@ rebuild-fast: ## Rebuild workspace using BuildKit + cache mounts (fastest path)
 	$(COMPOSE) up -d workspace
 
 # ── Diagnostics ─────────────────────────────────────────────────────────────
-doctor: ## Run haven doctor inside the workspace
-	$(HAVEN) doctor
+doctor: ## Run bulkhead doctor inside the workspace
+	$(BULKHEAD) doctor
 
 backup: ## Backup workspace state via rclone (use: make backup remote=name:path)
-	$(HAVEN) backup push $(remote)
+	$(BULKHEAD) backup push $(remote)
 
 limits: ## Show container cgroup limits vs host capacity
-	$(HAVEN) limits
+	$(BULKHEAD) limits
 
 gpu-info: ## Canonical GPU readout from metrics-server
-	$(HAVEN) gpu-info
+	$(BULKHEAD) gpu-info

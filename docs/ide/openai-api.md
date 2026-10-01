@@ -1,6 +1,6 @@
-# Generic OpenAI API: InferHaven Integration Guide
+# Generic OpenAI API: Bulkhead Integration Guide
 
-InferHaven's Ollama instance exposes an **OpenAI-compatible API**. This means any tool, library, or IDE extension that can talk to the OpenAI API can be pointed at InferHaven instead, with zero code changes.
+Bulkhead's Ollama instance exposes an **OpenAI-compatible API**. This means any tool, library, or IDE extension that can talk to the OpenAI API can be pointed at Bulkhead instead, with zero code changes.
 
 ## API Endpoints
 

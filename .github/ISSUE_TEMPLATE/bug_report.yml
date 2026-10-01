@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a reproducible problem with InferHaven Core.
+description: Report a reproducible problem with Bulkhead.
 labels: ["bug", "needs-triage"]
 body:
   - type: markdown
@@ -31,12 +31,12 @@ body:
   - type: dropdown
     id: deployment
     attributes:
-      label: How are you running InferHaven?
+      label: How are you running Bulkhead?
       options:
         - Self-hosted (docker compose / make up)
         - GitHub Codespaces
         - Devcontainer (VS Code Dev Containers / DevPod / JetBrains Gateway)
-        - Nested devcontainer (haven nest / haven devcontainer)
+        - Nested devcontainer (bulkhead nest / bulkhead devcontainer)
         - Other (describe above)
     validations:
       required: true
@@ -55,8 +55,8 @@ body:
   - type: textarea
     id: doctor
     attributes:
-      label: "`haven doctor` output"
-      description: Run `./scripts/haven doctor` (or `haven doctor` inside the workspace) and paste the output here. It captures most environment details automatically.
+      label: "`bulkhead doctor` output"
+      description: Run `./scripts/bulkhead doctor` (or `bulkhead doctor` inside the workspace) and paste the output here. It captures most environment details automatically.
       render: text
   - type: input
     id: model

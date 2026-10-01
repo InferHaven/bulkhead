@@ -1,5 +1,5 @@
 <!--
-Thanks for contributing to InferHaven Core! Please read CONTRIBUTING.md first.
+Thanks for contributing to Bulkhead! Please read CONTRIBUTING.md first.
 For anything beyond a small bug fix or typo, open an Issue or Discussion BEFORE
 writing code — surprise feature PRs may be closed with a request to discuss first.
 -->

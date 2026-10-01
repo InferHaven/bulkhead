@@ -1,12 +1,12 @@
 # Workspace Reference
 
-Features available inside the InferHaven workspace after SSH login or in the web IDE terminal.
+Features available inside the Bulkhead workspace after SSH login or in the web IDE terminal.
 
 ---
 
 ## Model tuning
 
-`haven tune <model>` applies coding-assistant optimisations to a model in-place, no re-download. Runs automatically after every `haven pull` and on container boot for `DEFAULT_MODEL`. Set `HAVEN_AUTO_TUNE=0` in `.env` to disable.
+`bulkhead tune <model>` applies coding-assistant optimisations to a model in-place, no re-download. Runs automatically after every `bulkhead pull` and on container boot for `DEFAULT_MODEL`. Set `HAVEN_AUTO_TUNE=0` in `.env` to disable.
 
 ### Safe-by-default principle
 
@@ -49,7 +49,7 @@ The classifier strips registry prefixes (`hf.co/<user>/`, `ghcr.io/<org>/`, `reg
 If you have a custom finetune you know is compatible with a tested family's template, opt in explicitly:
 
 ```bash
-HAVEN_FORCE_FAMILY=qwen3 haven tune my-custom-qwen3-finetune:7b
+HAVEN_FORCE_FAMILY=qwen3 bulkhead tune my-custom-qwen3-finetune:7b
 # or persist for auto-tune at boot:
 echo 'HAVEN_FORCE_FAMILY=qwen3' >> .env
 ```
@@ -61,40 +61,40 @@ Valid values: `qwen3` `qwen25` `llama3` `deepseek` `mistral` `phi4` `codellama` 
 Preview the exact Modelfile changes without applying:
 
 ```bash
-haven tune --dry-run qwen3:8b
+bulkhead tune --dry-run qwen3:8b
 ```
 
 Prints a unified diff and exits. No `ollama create` call is made.
 
 ### Untune (restore from backup)
 
-The first time `haven tune` (or `haven params set`/`reset`) modifies a model, the original Modelfile is snapshotted to `~/.haven/modelfile-backups/<slug>.modelfile` (mode 600, in the workspace home volume). Restore at any time:
+The first time `bulkhead tune` (or `bulkhead params set`/`reset`) modifies a model, the original Modelfile is snapshotted to `~/.haven/modelfile-backups/<slug>.modelfile` (mode 600, in the workspace home volume). Restore at any time:
 
 ```bash
-haven untune qwen3:8b
+bulkhead untune qwen3:8b
 ```
 
 This rewrites the Modelfile to the byte-identical pre-haven copy and unloads the model. Useful if a tune broke something or you want to A/B compare. The backup is retained after untune, you can re-tune and untune freely.
 
 ```bash
-haven tune qwen2.5-coder:7b
-haven show qwen2.5-coder:7b --modelfile   # verify
-haven params qwen2.5-coder:7b             # verify parameters
+bulkhead tune qwen2.5-coder:7b
+bulkhead show qwen2.5-coder:7b --modelfile   # verify
+bulkhead params qwen2.5-coder:7b             # verify parameters
 ```
 
 ---
 
 ## Background model downloads
 
-`haven pullback` starts an Ollama model download in the background so you can keep working:
+`bulkhead pullback` starts an Ollama model download in the background so you can keep working:
 
 ```bash
-haven pullback qwen2.5-coder:14b        # start download, return to prompt immediately
-haven pullback status                   # check progress of all background downloads
-haven pullback cancel qwen2.5-coder:14b # cancel
+bulkhead pullback qwen2.5-coder:14b        # start download, return to prompt immediately
+bulkhead pullback status                   # check progress of all background downloads
+bulkhead pullback cancel qwen2.5-coder:14b # cancel
 ```
 
-Progress is tracked in `~/.haven/downloads/` and visible in the tmux status bar in real time. Up to 5 parallel downloads are supported. Auto-tune and harness config sync run automatically on completion, same as `haven pull`.
+Progress is tracked in `~/.haven/downloads/` and visible in the tmux status bar in real time. Up to 5 parallel downloads are supported. Auto-tune and harness config sync run automatically on completion, same as `bulkhead pull`.
 
 ---
 
@@ -102,29 +102,29 @@ Progress is tracked in `~/.haven/downloads/` and visible in the tmux status bar 
 
 The workspace home directory (`/home/haven`) is a Docker volume, everything in it survives `docker compose down && docker compose up`. Language-specific installs (`go install`, `cargo install`, `uv tool install`, `npm install -g`, `pip install --user`) all land in the home volume by default.
 
-For apt packages, use `haven apt` instead of `sudo apt install` to persist them across container restarts.
+For apt packages, use `bulkhead apt` instead of `sudo apt install` to persist them across container restarts.
 
 ---
 
 ## Starship prompt
 
-InferHaven ships with [Starship](https://starship.rs) enabled by default (`INSTALL_STARSHIP=1`). It shows git status, active language versions, background job count (surfaces `haven pullback` workers), and command duration for slow operations.
+Bulkhead ships with [Starship](https://starship.rs) enabled by default (`INSTALL_STARSHIP=1`). It shows git status, active language versions, background job count (surfaces `bulkhead pullback` workers), and command duration for slow operations.
 
 **Nerd Font (recommended):** Install [JetBrains Mono Nerd Font](https://www.nerdfonts.com), or any Nerd Font, in your **terminal emulator** (client-side, not in the container).
 
-**Switching prompt mode:** Use `haven starship` from inside the workspace to manage the badge style:
+**Switching prompt mode:** Use `bulkhead starship` from inside the workspace to manage the badge style:
 
 | Command | Effect |
 | --------- | -------- |
-| `haven starship` | Show current mode, version, and config path |
-| `haven starship emoji` | Switch badge to 🏡 IH, no Nerd Font required |
-| `haven starship nf` | Switch badge to 󰚊 IH (Nerd Font icon) |
-| `haven starship reset` | Restore InferHaven default config |
-| `haven starship edit` | Open `~/.config/starship.toml` in `$EDITOR` |
+| `bulkhead starship` | Show current mode, version, and config path |
+| `bulkhead starship emoji` | Switch badge to 🏡 IH, no Nerd Font required |
+| `bulkhead starship nf` | Switch badge to 󰚊 IH (Nerd Font icon) |
+| `bulkhead starship reset` | Restore Bulkhead default config |
+| `bulkhead starship edit` | Open `~/.config/starship.toml` in `$EDITOR` |
 
 The switch patches `~/.config/starship.toml` directly, so it persists across reconnects and tmux reattaches. Open a new shell after switching (`exec $SHELL -l`) to see the change.
 
-To opt out entirely: set `INSTALL_STARSHIP=0` in `.env`. Customise by editing `~/.config/starship.toml`, InferHaven never overwrites it after the first start.
+To opt out entirely: set `INSTALL_STARSHIP=0` in `.env`. Customise by editing `~/.config/starship.toml`, Bulkhead never overwrites it after the first start.
 
 ---
 
@@ -137,7 +137,7 @@ This is wired up automatically on first start: code-server generates a dedicated
 The terminal reconnects to a fresh SSH session on each open; there is no persistent process between tabs. To keep a long-running session alive across terminal closes, attach to the tmux Haven session:
 
 ```bash
-haven tmux   # attach to the always-running Haven session
+bulkhead tmux   # attach to the always-running Haven session
 ```
 
 ---
@@ -166,39 +166,39 @@ The workspace ships a curated set of CLI tools so you don't have to install them
 | `fzf` | Fuzzy finder, `Ctrl-T` for files, `Ctrl-R` for shell history, `Alt-C` for `cd`. |
 | `mise` | Per-project tool versions (replaces nvm/pyenv/rbenv). Drop a `.mise.toml` in your repo: `mise use node@20 python@3.12`. |
 | `atuin` | Searchable shell history. Up-arrow remains stock; `Ctrl-R` opens atuin's TUI search. Local-only by default. |
-| `tmate` | Instant pair-programming sessions, `haven tmate` prints an SSH URL for collaborators to join. |
-| `rclone` | Sync workspace state to S3, B2, Drive, etc. Drives `haven backup`. |
+| `tmate` | Instant pair-programming sessions, `bulkhead tmate` prints an SSH URL for collaborators to join. |
+| `rclone` | Sync workspace state to S3, B2, Drive, etc. Drives `bulkhead backup`. |
 | `supercronic` | Cron-in-container. Runs `haven-logrotate` daily and warms the model cache every 30 min. |
 
 Tools come from `apt` (Ubuntu noble), vendor installers, or pinned tarballs, see [docs/development/tool-sourcing.md](development/tool-sourcing.md#tool-sourcing-in-the-workspace-image) for the sourcing strategy and how to add new tools.
 
 ---
 
-## Service / system introspection (`haven service|limits|gpu-info`)
+## Service / system introspection (`bulkhead service|limits|gpu-info`)
 
 Three subcommands surface container internals without manual `docker inspect` / `cat /sys/fs/cgroup/...`:
 
 ```bash
-haven service ollama status      # show "running: started 2026-05-08T..."
-haven service ollama restart     # docker compose restart ollama
-haven service ollama logs --tail 50
-haven service workspace stop
-haven service caddy start
+bulkhead service ollama status      # show "running: started 2026-05-08T..."
+bulkhead service ollama restart     # docker compose restart ollama
+bulkhead service ollama logs --tail 50
+bulkhead service workspace stop
+bulkhead service caddy start
 
-haven limits                     # cgroup memory.max + cpu.max vs host /proc/meminfo + /proc/cpuinfo
+bulkhead limits                     # cgroup memory.max + cpu.max vs host /proc/meminfo + /proc/cpuinfo
                                  # also flags missing host swap (workloads near OOM crash hard)
 
-haven gpu-info                   # canonical GPU readout from metrics-server:9091
+bulkhead gpu-info                   # canonical GPU readout from metrics-server:9091
 ```
 
-`haven doctor` also runs an expanded check: every P1/P2 binary version, swap presence, supercronic process status, cgroup headroom.
+`bulkhead doctor` also runs an expanded check: every P1/P2 binary version, swap presence, supercronic process status, cgroup headroom.
 
 ---
 
-## Pair programming (`haven tmate`)
+## Pair programming (`bulkhead tmate`)
 
 ```bash
-haven tmate
+bulkhead tmate
 # Tmate URL printed — share it with a collaborator. Their input + your input
 # both drive the same shell. End the session with Ctrl-d.
 ```
@@ -207,15 +207,15 @@ Built on top of `tmate.io`, sessions are encrypted end-to-end, no account requir
 
 ---
 
-## Backup & restore (`haven backup`)
+## Backup & restore (`bulkhead backup`)
 
 ```bash
-haven backup status              # list configured rclone remotes + sizes of paths to be backed up
-haven backup push gdrive:haven   # snapshot ~/.haven, ~/.config, ~/.continue, ~/.inferhaven
-haven backup pull gdrive:haven   # restore from a remote
+bulkhead backup status              # list configured rclone remotes + sizes of paths to be backed up
+bulkhead backup push gdrive:haven   # snapshot ~/.haven, ~/.config, ~/.continue, ~/.inferhaven
+bulkhead backup pull gdrive:haven   # restore from a remote
 ```
 
-Rclone supports S3, B2, Drive, OneDrive, SFTP, and many more. Run `rclone config` once to set up a remote before using `haven backup push`.
+Rclone supports S3, B2, Drive, OneDrive, SFTP, and many more. Run `rclone config` once to set up a remote before using `bulkhead backup push`.
 
 ---
 
@@ -251,4 +251,4 @@ Bring your own dotfiles. On first boot only, the entrypoint clones `DOTFILES_REP
 DOTFILES_REPO=https://github.com/<you>/dotfiles.git
 ```
 
-If your install script writes `~/.zshrc` or `~/.tmux.conf`, it overrides the InferHaven defaults, your customisations win.
+If your install script writes `~/.zshrc` or `~/.tmux.conf`, it overrides the Bulkhead defaults, your customisations win.

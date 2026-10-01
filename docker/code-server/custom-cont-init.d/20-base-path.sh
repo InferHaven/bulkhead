@@ -5,7 +5,7 @@
 # so VS Code's web server prefixes all generated asset URLs correctly.
 # Runs after linuxserver's own config generation (s6-overlay ordering guarantee).
 BOOT_MODE=$([ -f /config/.haven/.code-server-initialized ] && echo warm || echo cold)
-echo "InferHaven: ${0##*/} (${BOOT_MODE} boot)"
+echo "Bulkhead: ${0##*/} (${BOOT_MODE} boot)"
 CONFIG="/config/.config/code-server/config.yaml"
 mkdir -p "$(dirname "$CONFIG")"
 sed -i '/^base-path:/d;/^base:/d;/^cert:/d' "$CONFIG" 2>/dev/null || true

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 ###############################################################################
-# InferHaven Workspace — Terminal-First Dev Environment
+# Bulkhead Workspace — Terminal-First Dev Environment
 #
 # Ubuntu-based container with:
 #   - SSH server, mosh, tmux, zsh, neovim, git + git-delta + lazygit
@@ -171,7 +171,7 @@ RUN curl -sS https://starship.rs/install.sh | sh -s -- --yes \
 
 # ── @devcontainers/cli (npm global) ─────────────────────────────────────────
 # Required for nested devcontainer support: a contributor SSH'd into a
-# production workspace can run `haven devcontainer up <path>` to spin up an
+# production workspace can run `bulkhead devcontainer up <path>` to spin up an
 # isolated dev stack inside it. Also handy for headless CI use.
 RUN npm install -g @devcontainers/cli \
     && devcontainer --version | head -1
@@ -191,7 +191,7 @@ RUN npm install -g @devcontainers/cli \
 # this with the real wrapper.
 RUN printf '%s\n' \
         '#!/bin/sh' \
-        '# InferHaven no-op stub — see docker/workspace/Dockerfile.' \
+        '# Bulkhead no-op stub — see docker/workspace/Dockerfile.' \
         'case "$1" in' \
         '  get)   read REG; printf "{\"ServerURL\":\"%s\",\"Username\":\"\",\"Secret\":\"\"}\n" "$REG" ;;' \
         '  store) cat >/dev/null ;;' \
@@ -266,12 +266,12 @@ RUN ln -sf /usr/bin/fdfind /usr/local/bin/fd \
 # Keeping all three in sync — single source of truth for the same path list.
 ENV PATH="/home/haven/.npm-global/bin:/home/haven/.local/bin:/home/haven/.opencode/bin:/home/haven/.local/share/mise/shims:/home/haven/.cargo/bin:/home/haven/go/bin:/usr/local/go/bin:${PATH}"
 RUN printf '%s\n' \
-      '# InferHaven: user tool paths' \
+      '# Bulkhead: user tool paths' \
       'export PATH="/home/haven/.npm-global/bin:/home/haven/.local/bin:/home/haven/.opencode/bin:/home/haven/.local/share/mise/shims:/home/haven/.cargo/bin:/home/haven/go/bin:/usr/local/go/bin:${PATH}"' \
       > /etc/profile.d/haven-path.sh \
     && mkdir -p /etc/zsh \
     && printf '%s\n' \
-      '# InferHaven: user tool paths — loaded for every zsh instance' \
+      '# Bulkhead: user tool paths — loaded for every zsh instance' \
       'typeset -U path 2>/dev/null || true' \
       'path=("/home/haven/.npm-global/bin" "/home/haven/.local/bin" "/home/haven/.opencode/bin" "/home/haven/.local/share/mise/shims" "/home/haven/.cargo/bin" "/home/haven/go/bin" "/usr/local/go/bin" $path)' \
       'export PATH' \
@@ -311,7 +311,8 @@ USER root
 COPY --link scripts/lib                         /usr/local/lib/haven/
 COPY --link scripts/entrypoint.sh               /usr/local/bin/entrypoint.sh
 COPY --link scripts/add-ssh-key.sh              /usr/local/bin/add-ssh-key
-COPY --link scripts/haven.sh                    /usr/local/bin/haven
+COPY --link scripts/haven.sh                    /usr/local/bin/bulkhead
+COPY --link scripts/haven-alias.sh              /usr/local/bin/haven
 COPY --link scripts/haven-install.sh            /usr/local/bin/haven-install
 COPY --link scripts/haven-logrotate.sh          /usr/local/bin/haven-logrotate
 COPY --link scripts/haven-migrate-home.sh       /usr/local/bin/haven-migrate-home
@@ -331,6 +332,7 @@ COPY --link scripts/ih-pane-capture.sh          /usr/local/bin/ih-pane-capture
 COPY --link scripts/ih-pane-restore.sh          /usr/local/bin/ih-pane-restore
 RUN chmod +x /usr/local/bin/entrypoint.sh \
              /usr/local/bin/add-ssh-key \
+             /usr/local/bin/bulkhead \
              /usr/local/bin/haven \
              /usr/local/bin/haven-install \
              /usr/local/bin/haven-logrotate \
@@ -348,7 +350,8 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
              /usr/local/bin/inferhaven-alert-watcher \
              /usr/local/bin/inferhaven-alerts-popup \
              /usr/local/bin/ih-pane-capture \
-             /usr/local/bin/ih-pane-restore
+             /usr/local/bin/ih-pane-restore \
+    && ln -s bulkhead /usr/local/bin/bh
 
 # ── Starship default config + crontab (baked into image, copied on first start) ──
 RUN mkdir -p /etc/inferhaven

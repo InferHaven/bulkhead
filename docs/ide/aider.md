@@ -1,6 +1,6 @@
-# aider: InferHaven Integration Guide
+# aider: Bulkhead Integration Guide
 
-[aider](https://aider.chat) is a terminal-based AI pair programming tool. It works directly with your git repos to make AI-assisted code changes. It connects perfectly to InferHaven's Ollama instance.
+[aider](https://aider.chat) is a terminal-based AI pair programming tool. It works directly with your git repos to make AI-assisted code changes. It connects perfectly to Bulkhead's Ollama instance.
 
 ## Installation
 
@@ -34,10 +34,10 @@ Or install on your local machine and connect via SSH tunnel.
 
 ## Configuration
 
-### Direct connection (from inside InferHaven workspace)
+### Direct connection (from inside Bulkhead workspace)
 
 ```bash
-# Use the default InferHaven model
+# Use the default Bulkhead model
 aider --model ollama/qwen2.5-coder:7b
 
 # Use a larger model (if GPU is available)
@@ -62,7 +62,7 @@ aider --model ollama/qwen2.5-coder:7b --ollama-api-base http://localhost:11434
 `~/.aider.conf.yml` is auto-created when `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` is set in `.env`. You can also create or edit it manually:
 
 ```yaml
-# InferHaven aider config
+# Bulkhead aider config
 model: ollama/qwen2.5-coder:7b
 ollama-api-base: http://localhost:11434
 auto-commits: true
@@ -104,7 +104,7 @@ aider --model ollama/qwen2.5-coder:7b src/auth.py src/models/user.py tests/
 
 - Inside workspace: Check `$OLLAMA_HOST` is set (`echo $OLLAMA_HOST`)
 - From local: Verify SSH tunnel is running
-- Check Ollama is up: `haven status`
+- Check Ollama is up: `bulkhead status`
 
 **Slow generation:**
 

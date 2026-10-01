@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# InferHaven volume layout migrator — one-shot.
+# Bulkhead volume layout migrator — one-shot.
 #
 # Old layout: workspace_home volume mounted at /home/haven (single user only).
 # New layout: workspace_home volume mounted at /home (multi-user friendly).

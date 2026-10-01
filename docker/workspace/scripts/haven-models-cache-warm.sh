@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# InferHaven model cache warmer — runs every 30 min via supercronic.
+# Bulkhead model cache warmer — runs every 30 min via supercronic.
 # Pre-populates /run/haven/{tags,show-*}.json so first user-facing query
-# (haven models, status bar, sync) hits a warm cache.
+# (bulkhead models, status bar, sync) hits a warm cache.
 set -uo pipefail
 
 # shellcheck source=/dev/null

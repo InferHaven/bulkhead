@@ -5,11 +5,11 @@
 # SC1007: `TMUX= tmux ...` intentionally launches nested tmux from inside an
 #   outer tmux client (the popup runs under the outer session).
 ###############################################################################
-# InferHaven status-right click dispatcher
+# Bulkhead status-right click dispatcher
 #
 # Opens a popup with five views:
 #   System      — memory bars (active/cache/available), per-core CPU, disk, GPU
-#   Downloads   — live haven pullback status
+#   Downloads   — live bulkhead pullback status
 #   Alerts      — fzf list of undismissed alert files; dismiss with Enter
 #   Containers  — live docker stats for inferhaven containers (CPU normalized)
 #   Sessions    — tmux session list with create/attach/rename/kill/save actions
@@ -341,7 +341,7 @@ while true; do
     printf "  ${CB}${CY}Background Downloads${CR}  ${CD}(refreshes every 3s)${CR}\n"
     printf "  ${CD}System  │${CR}  ${CB}${CY}[Downloads]${CR}  ${CD}│  Alerts  │  Containers  │  Sessions${CR}   ${CD}← → q${CR}\n"
     printf "  ${C3}──────────────────────────────────────────────────────────${CR}\n\n"
-    haven pullback status 2>/dev/null \
+    bulkhead pullback status 2>/dev/null \
         || printf "  ${CD}No active downloads.${CR}\n"
     printf "\n  ${CD}← → navigate   q close${CR}\n"
 
@@ -497,7 +497,7 @@ while true; do
     if [ $_docker_ok -ne 0 ]; then
         printf "  ${CD}Docker error:${CR}\n  %s\n\n" "$_di_err"
     elif [ -z "$_names" ]; then
-        printf "  ${CD}No InferHaven containers found running.${CR}\n\n"
+        printf "  ${CD}No Bulkhead containers found running.${CR}\n\n"
     elif printf "%s" "$_stats" | grep -q "^Error"; then
         printf "  ${CD}docker stats error:${CR}\n  %s\n\n" "$_stats"
     else
@@ -713,7 +713,7 @@ while true; do
 
         t)
             printf "\n  ${C2}Starting tmate session...${CR}\n"
-            haven tmate start 2>&1 | sed "s/^/  /"
+            bulkhead tmate start 2>&1 | sed "s/^/  /"
             sleep 2
             ;;
         T)
@@ -721,7 +721,7 @@ while true; do
             read -rn1 _confirm 2>/dev/null
             printf "\n"
             if [ "$_confirm" = "y" ] || [ "$_confirm" = "Y" ]; then
-                haven tmate kill 2>&1 | sed "s/^/  /"
+                bulkhead tmate kill 2>&1 | sed "s/^/  /"
                 sleep 1
             fi
             ;;
@@ -782,7 +782,7 @@ fi
 # ── Open the popup ────────────────────────────────────────────────────────────
 tmux display-popup -E \
   -w 92% -h 88% \
-  -T " InferHaven  ← → navigate   q close " \
+  -T " Bulkhead  ← → navigate   q close " \
   "exec tmux attach-session -t '${SESSION}'"
 
 # Always exit 0 — prevents run-shell from printing "returned N" error messages

@@ -10,7 +10,7 @@ The workspace `Dockerfile` uses **four** install strategies, ordered by maintena
 | --- | --- | --- |
 | `apt-get install` (Ubuntu noble) | `mosh`, `gh`, `tmate`, `rclone`, `direnv`, `zoxide`, `eza`, `git-delta`, `tmux`, `git`, `git-lfs`, `ripgrep`, `fd-find`, `bat`, `lsd`, `btop`, `tree`, `nodejs`, `python3`, `build-essential`, `docker-ce-cli`, `docker-compose-plugin` | **Zero.** Ubuntu tracks upstream; `apt upgrade` inside the container picks up patches. |
 | Vendor installer (`curl ... \| sh`) | `starship`, `mise` | **Zero.** Vendor resolves the latest release at build time. |
-| `npm install -g` | `@devcontainers/cli` | **Zero.** npm `latest` tag floats; needed for nested devcontainer support (`haven devcontainer`). |
+| `npm install -g` | `@devcontainers/cli` | **Zero.** npm `latest` tag floats; needed for nested devcontainer support (`bulkhead devcontainer`). |
 | `releases/latest/download/<stable-asset>` | `supercronic`, `atuin` | **Zero on quiet days, loud break on asset rename.** GitHub redirects `/latest/` to current release; build fails immediately if the asset name changes (very rare). |
 | Pinned `ARG <NAME>_VERSION` | `Go`, `fzf`, `neovim`, `uv`, `lazygit` (asset name embeds version) | **Intentional bumps only.** Pinned because plugin/library compat depends on the toolchain version. |
 

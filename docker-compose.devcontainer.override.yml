@@ -1,5 +1,5 @@
 ###############################################################################
-# InferHaven Core — Devcontainer Override (full-stack flavor)
+# Bulkhead — Devcontainer Override (full-stack flavor)
 #
 # Layers on top of docker-compose.yml when opened via the full-stack
 # devcontainer flavor (.devcontainer/full-stack/devcontainer.json). Used as the
@@ -8,7 +8,7 @@
 #
 # What this override does:
 #   - Renames the compose project to `inferhaven-dev` so it never collides
-#     with a running production InferHaven stack on the same host (which uses
+#     with a running production Bulkhead stack on the same host (which uses
 #     `inferhaven`). Renames every container_name + every volume + the bridge
 #     network to match.
 #   - Drops host port bindings on workspace/code-server/caddy. The

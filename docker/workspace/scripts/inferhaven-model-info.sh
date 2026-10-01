@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-# InferHaven model info popup
+# Bulkhead model info popup
 #
 # Displays runtime details for all models currently loaded in Ollama.
 # Invoked by the MouseDown1StatusLeft binding in .tmux.conf via display-popup.

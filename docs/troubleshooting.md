@@ -1,12 +1,12 @@
 # Troubleshooting
 
-Common issues and how to fix them. Run `haven doctor` first, it catches most problems automatically.
+Common issues and how to fix them. Run `bulkhead doctor` first, it catches most problems automatically.
 
 ## Services won't start
 
 ### "port is already in use"
 
-Another service is using a port InferHaven needs.
+Another service is using a port Bulkhead needs.
 
 ```bash
 # Find what's using the port (e.g., port 80)
@@ -41,7 +41,7 @@ df -h
 docker system prune -a
 
 # Check model sizes
-haven models
+bulkhead models
 ```
 
 ## Can't SSH into workspace
@@ -65,10 +65,10 @@ Your SSH key isn't configured.
 
 ```bash
 # Add your key (from the host)
-./scripts/haven ssh-key "$(cat ~/.ssh/id_ed25519.pub)"
+./scripts/bulkhead ssh-key "$(cat ~/.ssh/id_ed25519.pub)"
 
 # Or from inside the workspace
-haven ssh-key "$(cat ~/.ssh/id_ed25519.pub)"
+bulkhead ssh-key "$(cat ~/.ssh/id_ed25519.pub)"
 
 # Or set it in .env
 AUTHORIZED_KEYS=ssh-ed25519 AAAA... user@host
@@ -118,11 +118,11 @@ docker compose ps ollama
 docker compose logs ollama | tail -50
 
 # Retry the pull
-haven pull qwen2.5-coder:7b
+bulkhead pull qwen2.5-coder:7b
 
 # If still stuck, remove and re-pull
-haven remove qwen2.5-coder:7b
-haven pull qwen2.5-coder:7b
+bulkhead remove qwen2.5-coder:7b
+bulkhead pull qwen2.5-coder:7b
 ```
 
 ### Very slow AI responses
@@ -136,10 +136,10 @@ haven pull qwen2.5-coder:7b
 
 ```bash
 # List what's actually installed (run from inside the workspace or host)
-haven models
+bulkhead models
 
 # Pull the model you need
-haven pull qwen2.5-coder:7b
+bulkhead pull qwen2.5-coder:7b
 
 # Verify the exact model name (case-sensitive, from inside the workspace)
 curl http://ollama:11434/api/tags | jq '.models[].name'
@@ -156,13 +156,13 @@ OpenCode's Ollama provider config is written to `~/.config/opencode/config.json`
 # Check the config
 cat ~/.config/opencode/config.json
 
-# The list auto-updates after any haven pull/remove.
+# The list auto-updates after any bulkhead pull/remove.
 # To manually refresh after pulling models outside of haven:
-haven pull <model>   # triggers a sync as a side effect
+bulkhead pull <model>   # triggers a sync as a side effect
 # or remove and re-add to force refresh:
 rm ~/.config/opencode/config.json
 # then pull any model to regenerate it:
-haven pull qwen2.5-coder:7b
+bulkhead pull qwen2.5-coder:7b
 ```
 
 If you pulled Ollama models before `INSTALL_ASSISTANTS=opencode` ran (e.g., they were already on disk from a previous install), the config may have been seeded with only `DEFAULT_MODEL`. Run the above to regenerate it with the full list.
@@ -245,10 +245,10 @@ Everything works over plain HTTP (bare IP or `localhost`) because no TLS is invo
 
 ```bash
 # From the host
-./scripts/haven caddy cert
+./scripts/bulkhead caddy cert
 
 # Or from inside the workspace (SSH session)
-haven caddy cert
+bulkhead caddy cert
 ```
 
 This exports `caddy-root.crt` and prints per-platform install instructions. The cert only changes if you recreate the `caddy_data` volume, once trusted it stays valid indefinitely.
@@ -350,7 +350,7 @@ cat /etc/inferhaven/crontab
 tail -n 50 ~/.haven/install.log | grep -i cron
 ```
 
-`haven doctor` flags this automatically.
+`bulkhead doctor` flags this automatically.
 
 ### Pinned tool version is wrong / missing feature
 
@@ -419,14 +419,14 @@ atuin register -u <user> -e <email>   # or: atuin login
 
 See [atuin.sh](https://atuin.sh) for self-hosting the sync server.
 
-### `haven tmate`: web URL returns 503
+### `bulkhead tmate`: web URL returns 503
 
 The 503 originates upstream at `tmate.io` and is intermittent. SSH still works. To check session state:
 
 ```bash
-haven tmate status     # current SSH/web URLs + uptime
-haven tmate fg         # attach in this terminal
-haven tmate kill       # tear down
+bulkhead tmate status     # current SSH/web URLs + uptime
+bulkhead tmate fg         # attach in this terminal
+bulkhead tmate kill       # tear down
 ```
 
 State lives in `~/.haven/tmate.state`; the Sessions tab in the right-click tmux popup also lists active tmate sessions (keys: `t` start, `T` kill).
@@ -439,7 +439,7 @@ If nothing else works, a full reset:
 
 ```bash
 # Stop and remove all containers and data
-haven reset
+bulkhead reset
 # Type 'yes' to confirm
 
 # Start fresh
@@ -452,7 +452,7 @@ This deletes all models, projects, and settings. Back up `~/projects` first if n
 
 ## Still stuck?
 
-1. Run `haven doctor` for automated diagnostics
+1. Run `bulkhead doctor` for automated diagnostics
 2. Check the [GitHub Issues](https://github.com/InferHaven/inferhaven-core/issues)
 3. Join the [Discord](https://discord.gg/X5htGNnEh5) community
-4. Open a new issue with `haven doctor` output and relevant logs
+4. Open a new issue with `bulkhead doctor` output and relevant logs

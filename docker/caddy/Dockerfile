@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1.6
 #
-# InferHaven custom Caddy image
+# Bulkhead custom Caddy image
 #
 # Why we ship our own image instead of consuming caddy:2-alpine directly:
 #
 # The previous compose service bound entrypoint.sh + the static HTML templates
 # from ./docker/caddy into the upstream image at runtime. That works fine for
 # top-level `docker compose up`, but in nested compose (`devpod up` from inside
-# a running InferHaven workspace, or any other "compose-inside-compose" setup)
+# a running Bulkhead workspace, or any other "compose-inside-compose" setup)
 # the inner compose-CLI sends bind specs containing the INNER workspace path
 # to the OUTER docker daemon. The daemon can't see that path, so the mount
 # source ends up empty (or non-existent), the entrypoint silently exits 0,

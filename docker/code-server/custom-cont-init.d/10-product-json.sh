@@ -19,13 +19,13 @@ SENTINEL_DIR="/config/.haven"
 SENTINEL="${SENTINEL_DIR}/.code-server-initialized"
 
 BOOT_MODE=$([ -f "${SENTINEL}" ] && echo warm || echo cold)
-echo "InferHaven: ${0##*/} (${BOOT_MODE} boot)"
+echo "Bulkhead: ${0##*/} (${BOOT_MODE} boot)"
 
 mkdir -p "${SENTINEL_DIR}"
 chown abc:abc "${SENTINEL_DIR}" 2>/dev/null || true
 
 if [ ! -f "${PRODUCT_JSON}" ]; then
-    echo "InferHaven: WARNING — ${PRODUCT_JSON} not found, skipping webview patch" >&2
+    echo "Bulkhead: WARNING — ${PRODUCT_JSON} not found, skipping webview patch" >&2
     exit 0
 fi
 
@@ -50,8 +50,8 @@ if /app/code-server/lib/node -e \
     'JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"))' \
     "${TMP}" 2>/dev/null; then
     mv "${TMP}" "${PRODUCT_JSON}"
-    echo "InferHaven: stripped webviewContentExternalBaseUrlTemplate from product.json (webviews now same-origin)"
+    echo "Bulkhead: stripped webviewContentExternalBaseUrlTemplate from product.json (webviews now same-origin)"
 else
     rm -f "${TMP}"
-    echo "InferHaven: ERROR — patched product.json failed JSON.parse, leaving original in place" >&2
+    echo "Bulkhead: ERROR — patched product.json failed JSON.parse, leaving original in place" >&2
 fi

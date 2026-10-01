@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// InferHaven metrics server — listens on :9091, returns system stats as JSON.
+// Bulkhead metrics server — listens on :9091, returns system stats as JSON.
 // Internal only (not exposed to host). Caddy proxies /metrics.json here.
 // Reads /proc for CPU/RAM, df for disk, Docker socket for container uptimes.
 'use strict';
@@ -355,5 +355,5 @@ const server = http.createServer((req, res) => {
 server.timeout = REQ_TIMEOUT_MS;
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[InferHaven] Metrics server listening on :${PORT}`);
+  console.log(`[Bulkhead] Metrics server listening on :${PORT}`);
 });

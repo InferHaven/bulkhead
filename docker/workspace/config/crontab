@@ -1,4 +1,4 @@
-# InferHaven supercronic schedule — runs as the haven user.
+# Bulkhead supercronic schedule — runs as the haven user.
 # Format: standard cron 5-field, then command.
 # Output goes to ~/.haven/install.log (supercronic default redirect).
 

@@ -1,11 +1,11 @@
-# InferHaven Documentation
+# Bulkhead Documentation
 
-Welcome to the InferHaven Core documentation.
+Welcome to the Bulkhead documentation.
 
 ## Getting Started
 
 - [Quick Start Guide](quickstart.md), Up and running in 5 minutes
-- [Workspace Reference](workspace.md), Model tuning, background downloads, Starship prompt, persistent packages, status bar alerts, bare-metal tools (lazygit/delta/direnv/zoxide/eza/mise/atuin/tmate), `haven service|limits|gpu-info`, multi-user, dotfiles bootstrap, backup
+- [Workspace Reference](workspace.md), Model tuning, background downloads, Starship prompt, persistent packages, status bar alerts, bare-metal tools (lazygit/delta/direnv/zoxide/eza/mise/atuin/tmate), `bulkhead service|limits|gpu-info`, multi-user, dotfiles bootstrap, backup
 - [GPU Setup Guide](gpu-setup.md), Configure NVIDIA GPU acceleration
 - [Harness Guide](harnesses.md), Setup and use coding assistant harnesses
 - [Contributing](../CONTRIBUTING.md), Tool sourcing strategy and version-bump flow for the workspace image

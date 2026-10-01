@@ -2,7 +2,7 @@
 ###############################################################################
 # haven-tune-detect.sh
 #
-# Family classifier + Modelfile backup helper for `haven tune`.
+# Family classifier + Modelfile backup helper for `bulkhead tune`.
 #
 # Sourced from haven.sh and from the standalone classifier test
 # (scripts/tests/tune-detect-family.sh).

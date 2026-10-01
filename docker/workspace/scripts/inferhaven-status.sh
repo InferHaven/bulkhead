@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-# InferHaven tmux status bar — right-side script
+# Bulkhead tmux status bar — right-side script
 #
 # Called by .tmux.conf every status-interval seconds (default: 5s).
 # Outputs a coloured string showing alerts, active downloads, RAM/CPU/GPU,

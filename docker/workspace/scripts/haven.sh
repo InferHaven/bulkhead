@@ -1,11 +1,13 @@
 #!/bin/bash
 ###############################################################################
-# haven — InferHaven CLI (workspace-internal)
+# bulkhead — Bulkhead CLI (workspace-internal). Installed as
+# /usr/local/bin/bulkhead with bh pointing at it; /usr/local/bin/haven is the
+# old name (haven-alias.sh), which prints a notice and then runs this script.
 #
 # Runs inside the workspace container. Ollama is always reached via the
 # container-internal service name — no host port conflicts possible.
 #
-# Usage: haven <command> [args]
+# Usage: bulkhead <command> [args]
 ###############################################################################
 set -e
 
@@ -33,7 +35,7 @@ fi
 # Shared library: _haven_resolve_project, _haven_resolve_container,
 # _haven_resolve_compose_files (plus back-compat aliases _haven_compose_project,
 # _haven_container, _haven_self_container_id). Used by monitoring scripts +
-# popup + alert-watcher so every InferHaven surface resolves containers the
+# popup + alert-watcher so every Bulkhead surface resolves containers the
 # same way.
 # shellcheck source=/dev/null
 . /usr/local/lib/haven/haven-resolve.sh
@@ -55,9 +57,10 @@ _haven_compose() {
 # ── Help ──────────────────────────────────────────────────────────────────────
 cmd_help() {
   echo ""
-  echo -e "  ${CYAN}${BOLD}InferHaven${NC} v${VERSION} — A safe haven for AI inference"
+  echo -e "  ${CYAN}${BOLD}Bulkhead${NC} v${VERSION} — A safe haven for AI inference"
   echo ""
-  echo "  Usage: haven <command> [args]"
+  echo "  Usage: bulkhead <command> [args]"
+  echo "  Short form: 'bh'"
   echo ""
   echo -e "  ${BOLD}Models${NC}"
   echo "    models                    List downloaded models"
@@ -101,7 +104,7 @@ cmd_help() {
   echo "    starship                  Show prompt mode and config path"
   echo "    starship emoji            Switch badge to emoji mode (🏡 IH) — no Nerd Font needed"
   echo "    starship nf               Switch badge to Nerd Font mode (󰚊 IH)"
-  echo "    starship reset            Restore InferHaven default config"
+  echo "    starship reset            Restore Bulkhead default config"
   echo "    starship edit             Open ~/.config/starship.toml in \$EDITOR"
   echo ""
   echo -e "  ${BOLD}Tmux workspace${NC}"
@@ -122,7 +125,7 @@ cmd_help() {
   echo -e "  ${BOLD}Stack management (run from host)${NC}"
   echo "    up / down / restart / reset / update"
   echo "    → These modify the Docker stack itself. Run them from the host:"
-  echo "      ./scripts/haven <command>"
+  echo "      ./scripts/bulkhead <command>"
   echo ""
   echo -e "  ${BOLD}Model parameters${NC}"
   echo "    params <model>                    Show current parameters"
@@ -144,7 +147,7 @@ cmd_help() {
   echo "                                qwen2.5  qwen3  llama3.{0,1,2,3}  deepseek"
   echo "                                mistral  phi4   codellama  gemma{2,3}"
   echo "                              Anything else: safe defaults (num_ctx only)."
-  echo "                              Override: HAVEN_FORCE_FAMILY=<family> haven tune <model>"
+  echo "                              Override: HAVEN_FORCE_FAMILY=<family> bulkhead tune <model>"
   echo "    untune <model>            Restore Modelfile from the pre-tune backup"
   echo ""
   echo -e "  ${BOLD}Coding assistants${NC}"
@@ -163,8 +166,8 @@ cmd_help() {
   echo "    devcontainer down [path]                               Tear it down"
   echo "    devcontainer help                                      Full reference"
   echo ""
-  echo -e "  ${BOLD}Nested InferHaven compose (inferhaven-in-inferhaven)${NC}"
-  echo "    nest up <path> [--flavor <sub>]    Spin up a second InferHaven stack"
+  echo -e "  ${BOLD}Nested Bulkhead compose (inferhaven-in-inferhaven)${NC}"
+  echo "    nest up <path> [--flavor <sub>]    Spin up a second Bulkhead stack"
   echo "    nest down <path>                   Tear down the nested stack"
   echo "    nest exec <path> -- <cmd>          Exec inside (-u haven)"
   echo "    nest status [path|all]             Show running nested stacks"
@@ -226,11 +229,11 @@ cmd_models() {
 
 cmd_pull() {
   if [ -z "${1:-}" ]; then
-    echo "Usage: haven pull <model>"
-    echo "Example: haven pull qwen2.5-coder:7b"
+    echo "Usage: bulkhead pull <model>"
+    echo "Example: bulkhead pull qwen2.5-coder:7b"
     exit 1
   fi
-  echo -e "${CYAN}[InferHaven]${NC} Pulling model: $1"
+  echo -e "${CYAN}[Bulkhead]${NC} Pulling model: $1"
   local pull_error=""
   while IFS= read -r line; do
     local jerror status total completed
@@ -253,10 +256,10 @@ cmd_pull() {
     -d "{\"name\": \"$1\"}")
   echo ""
   if [ -n "$pull_error" ]; then
-    echo -e "${RED}[InferHaven]${NC} Error: ${pull_error}" >&2
+    echo -e "${RED}[Bulkhead]${NC} Error: ${pull_error}" >&2
     return 1
   fi
-  echo -e "${GREEN}[InferHaven]${NC} Model $1 ready."
+  echo -e "${GREEN}[Bulkhead]${NC} Model $1 ready."
   _haven_sync_all || true
 
   # Auto-tune: optimise context window, stop tokens, and template for all models.
@@ -264,7 +267,7 @@ cmd_pull() {
   # Unknown models get context window optimisation with safe defaults.
   # Skipped if HAVEN_AUTO_TUNE=0.
   if [ "${HAVEN_AUTO_TUNE:-1}" != "0" ]; then
-    echo -e "${CYAN}[InferHaven]${NC} Auto-tuning for coding assistant use..."
+    echo -e "${CYAN}[Bulkhead]${NC} Auto-tuning for coding assistant use..."
     cmd_tune "$1"
   fi
 }
@@ -276,7 +279,7 @@ _model_slug() {
   printf '%s' "$1" | tr ':/' '__'
 }
 
-# Internal worker — invoked via: haven _pullback_worker <model>
+# Internal worker — invoked via: bulkhead _pullback_worker <model>
 # Runs detached (nohup). Streams Ollama pull API, updates ~/.haven/downloads/<slug>.status.
 _pullback_worker() {
   local model="$1"
@@ -366,8 +369,8 @@ _pullback_start() {
     local existing_status
     existing_status=$(grep '^status=' "$sf" 2>/dev/null | cut -d= -f2-)
     if [ "$existing_status" = "downloading" ] || [ "$existing_status" = "starting" ]; then
-      echo -e "${YELLOW}[InferHaven]${NC} $model is already downloading."
-      echo "  Run: haven pullback status"
+      echo -e "${YELLOW}[Bulkhead]${NC} $model is already downloading."
+      echo "  Run: bulkhead pullback status"
       return 0
     fi
     # Stale done/error entry — remove and restart
@@ -384,25 +387,25 @@ _pullback_start() {
     { [ "$_s" = "downloading" ] || [ "$_s" = "starting" ]; } && active=$(( active + 1 )) || true
   done
   if [ "$active" -ge 5 ]; then
-    echo -e "${YELLOW}[InferHaven]${NC} 5 downloads already in progress (soft cap)."
-    echo "  Wait for one to complete or run: haven pullback status"
+    echo -e "${YELLOW}[Bulkhead]${NC} 5 downloads already in progress (soft cap)."
+    echo "  Wait for one to complete or run: bulkhead pullback status"
     return 1
   fi
 
   # Verify Ollama is reachable
   if ! curl -sf --max-time 2 "${OLLAMA_URL}/api/tags" > /dev/null 2>&1; then
-    echo -e "${RED}[InferHaven]${NC} Cannot reach Ollama at ${OLLAMA_URL}."
+    echo -e "${RED}[Bulkhead]${NC} Cannot reach Ollama at ${OLLAMA_URL}."
     exit 1
   fi
 
   # Launch background worker (nohup + exec so $$ in worker == $! here)
-  nohup /usr/local/bin/haven _pullback_worker "$model" \
+  nohup /usr/local/bin/bulkhead _pullback_worker "$model" \
     >> "${HOME}/.haven/install.log" 2>&1 &
   local worker_pid=$!
 
-  echo -e "${CYAN}[InferHaven]${NC} Downloading ${BOLD}$model${NC} in the background (PID $worker_pid)."
-  echo "  haven pullback status         — check progress"
-  echo "  haven pullback cancel $model  — cancel"
+  echo -e "${CYAN}[Bulkhead]${NC} Downloading ${BOLD}$model${NC} in the background (PID $worker_pid)."
+  echo "  bulkhead pullback status         — check progress"
+  echo "  bulkhead pullback cancel $model  — cancel"
 }
 
 _pullback_status() {
@@ -483,8 +486,8 @@ _pullback_status() {
   done
 
   if [ "$active" -eq 0 ] && [ "$done_count" -eq 0 ] && [ "$error_count" -eq 0 ]; then
-    echo -e "  ${CYAN}[InferHaven]${NC} No background downloads."
-    echo "  Start one: haven pullback <model>"
+    echo -e "  ${CYAN}[Bulkhead]${NC} No background downloads."
+    echo "  Start one: bulkhead pullback <model>"
     return 0
   fi
 
@@ -502,7 +505,7 @@ _pullback_status() {
   if [ "$error_count" -gt 0 ]; then
     echo -e "  ${BOLD}Failed${NC}"
     printf "%b" "${error_out}"
-    echo "  Re-run: haven pullback <model>"
+    echo "  Re-run: bulkhead pullback <model>"
     echo ""
   fi
 }
@@ -510,7 +513,7 @@ _pullback_status() {
 _pullback_cancel() {
   local model="${1:-}"
   if [ -z "$model" ]; then
-    echo "Usage: haven pullback cancel <model>"
+    echo "Usage: bulkhead pullback cancel <model>"
     exit 1
   fi
   local slug
@@ -518,7 +521,7 @@ _pullback_cancel() {
   local sf="${HOME}/.haven/downloads/${slug}.status"
 
   if [ ! -f "$sf" ]; then
-    echo -e "${YELLOW}[InferHaven]${NC} No active download found for: $model"
+    echo -e "${YELLOW}[Bulkhead]${NC} No active download found for: $model"
     return 0
   fi
 
@@ -526,9 +529,9 @@ _pullback_cancel() {
   pid=$(grep '^pid=' "$sf" 2>/dev/null | cut -d= -f2-)
   if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
     kill "$pid" 2>/dev/null || true
-    echo -e "${CYAN}[InferHaven]${NC} Cancelled download of $model (PID $pid)."
+    echo -e "${CYAN}[Bulkhead]${NC} Cancelled download of $model (PID $pid)."
   else
-    echo -e "${YELLOW}[InferHaven]${NC} Worker process not found — cleaning up."
+    echo -e "${YELLOW}[Bulkhead]${NC} Worker process not found — cleaning up."
   fi
   rm -f "$sf"
 }
@@ -539,9 +542,9 @@ cmd_pullback() {
     status|ls|list) _pullback_status ;;
     cancel)         shift; _pullback_cancel "${1:-}" ;;
     "")
-      echo "Usage: haven pullback <model>"
-      echo "       haven pullback status"
-      echo "       haven pullback cancel <model>"
+      echo "Usage: bulkhead pullback <model>"
+      echo "       bulkhead pullback status"
+      echo "       bulkhead pullback cancel <model>"
       exit 1
       ;;
     *)              _pullback_start "$1" ;;
@@ -550,23 +553,23 @@ cmd_pullback() {
 
 cmd_remove() {
   if [ -z "${1:-}" ]; then
-    echo "Usage: haven remove <model>"
+    echo "Usage: bulkhead remove <model>"
     exit 1
   fi
-  echo -e "${YELLOW}[InferHaven]${NC} Removing model: $1"
+  echo -e "${YELLOW}[Bulkhead]${NC} Removing model: $1"
   local resp
   resp=$(curl -sf -X DELETE "${OLLAMA_URL}/api/delete" \
     -H "Content-Type: application/json" \
     -d "{\"name\": \"$1\"}" 2>/dev/null) || true
-  echo -e "${GREEN}[InferHaven]${NC} Model $1 removed."
+  echo -e "${GREEN}[Bulkhead]${NC} Model $1 removed."
   _haven_sync_all || true
 }
 
 cmd_show() {
   local model="${1:-}"
   if [ -z "$model" ]; then
-    echo "Usage: haven show <model> [--modelfile]"
-    echo "  --modelfile   Print the raw Modelfile (useful after haven tune/params)"
+    echo "Usage: bulkhead show <model> [--modelfile]"
+    echo "  --modelfile   Print the raw Modelfile (useful after bulkhead tune/params)"
     exit 1
   fi
   local resp
@@ -624,7 +627,7 @@ cmd_show() {
   [ -n "${license}" ] && echo -e "\n  License: ${license}"
 
   echo ""
-  echo "  Tip: haven show ${model} --modelfile   to inspect the full Modelfile"
+  echo "  Tip: bulkhead show ${model} --modelfile   to inspect the full Modelfile"
   echo ""
 }
 
@@ -858,7 +861,7 @@ cmd_unload() {
       echo "No models currently loaded in memory."
       exit 0
     fi
-    echo -e "${YELLOW}[InferHaven]${NC} The following models are currently loaded:\n"
+    echo -e "${YELLOW}[Bulkhead]${NC} The following models are currently loaded:\n"
     echo "${resp}" | jq -r '.models[].name' | while IFS= read -r m; do
       echo "  - ${m}"
     done
@@ -871,35 +874,35 @@ cmd_unload() {
       exit 0
     fi
     echo "${resp}" | jq -r '.models[].name' | while IFS= read -r m; do
-      echo -e "${CYAN}[InferHaven]${NC} Unloading ${m}..."
+      echo -e "${CYAN}[Bulkhead]${NC} Unloading ${m}..."
       curl -sf "${OLLAMA_URL}/api/generate" \
         -H "Content-Type: application/json" \
         -d "{\"model\":\"${m}\",\"keep_alive\":0}" > /dev/null 2>&1 || true
     done
-    echo -e "${GREEN}[InferHaven]${NC} Done. All models unloaded."
+    echo -e "${GREEN}[Bulkhead]${NC} Done. All models unloaded."
     return
   fi
-  echo -e "${CYAN}[InferHaven]${NC} Unloading ${model} from memory..."
+  echo -e "${CYAN}[Bulkhead]${NC} Unloading ${model} from memory..."
   curl -sf "${OLLAMA_URL}/api/generate" \
     -H "Content-Type: application/json" \
     -d "{\"model\":\"${model}\",\"keep_alive\":0}" > /dev/null 2>&1 || true
-  echo -e "${GREEN}[InferHaven]${NC} Done. Model will reload fresh on next use."
+  echo -e "${GREEN}[Bulkhead]${NC} Done. Model will reload fresh on next use."
 }
 
 cmd_cp() {
   if [ -z "${1:-}" ] || [ -z "${2:-}" ]; then
-    echo "Usage: haven cp <source> <destination>"
-    echo "Example: haven cp qwen2.5-coder:7b my-custom-model"
+    echo "Usage: bulkhead cp <source> <destination>"
+    echo "Example: bulkhead cp qwen2.5-coder:7b my-custom-model"
     exit 1
   fi
-  echo -e "${CYAN}[InferHaven]${NC} Copying $1 → $2..."
+  echo -e "${CYAN}[Bulkhead]${NC} Copying $1 → $2..."
   curl -sf "${OLLAMA_URL}/api/copy" \
     -H "Content-Type: application/json" \
     -d "{\"source\": \"$1\", \"destination\": \"$2\"}" > /dev/null || {
-    echo "Error: Copy failed. Check that '$1' exists (haven models)."
+    echo "Error: Copy failed. Check that '$1' exists (bulkhead models)."
     exit 1
   }
-  echo -e "${GREEN}[InferHaven]${NC} Done. '$2' is now available."
+  echo -e "${GREEN}[Bulkhead]${NC} Done. '$2' is now available."
   _haven_sync_all || true
 }
 
@@ -909,9 +912,9 @@ cmd_cp() {
 # are NOT re-downloaded, only the metadata changes. Instant operation.
 #
 # Usage:
-#   haven params <model>                      — show current parameters
-#   haven params <model> set <key> <value>    — set a parameter
-#   haven params <model> reset                — remove all custom parameters
+#   bulkhead params <model>                      — show current parameters
+#   bulkhead params <model> set <key> <value>    — set a parameter
+#   bulkhead params <model> reset                — remove all custom parameters
 #
 # Common parameters:
 #   temperature <0.0–2.0>   Creativity. Lower = more focused/deterministic.
@@ -925,7 +928,7 @@ cmd_cp() {
 cmd_params() {
   local model="${1:-}"
   if [ -z "${model}" ]; then
-    echo "Usage: haven params <model> [set <key> <value> | reset]"
+    echo "Usage: bulkhead params <model> [set <key> <value> | reset]"
     echo ""
     echo "  Common parameters:"
     echo "    temperature   0.0–2.0   Creativity (lower = more focused)"
@@ -952,8 +955,8 @@ cmd_params() {
     set)
       local key="${1:-}" value="${2:-}"
       if [ -z "${key}" ] || [ -z "${value}" ]; then
-        echo "Usage: haven params ${model} set <key> <value>"
-        echo "Example: haven params ${model} set temperature 0.3"
+        echo "Usage: bulkhead params ${model} set <key> <value>"
+        echo "Example: bulkhead params ${model} set temperature 0.3"
         exit 1
       fi
       _params_apply "${model}" "${key}" "${value}"
@@ -962,7 +965,7 @@ cmd_params() {
       _params_reset "${model}"
       ;;
     *)
-      echo "Usage: haven params <model> [set <key> <value> | reset]"
+      echo "Usage: bulkhead params <model> [set <key> <value> | reset]"
       exit 1
       ;;
   esac
@@ -993,13 +996,13 @@ _params_recreate() {
   local model="$1" modelfile="$2"
 
   if [ -z "${modelfile}" ]; then
-    echo -e "${RED}[InferHaven]${NC} Internal error: empty modelfile — aborting." >&2
+    echo -e "${RED}[Bulkhead]${NC} Internal error: empty modelfile — aborting." >&2
     return 1
   fi
 
   # Snapshot the pre-modification Modelfile before we overwrite it.
   # Idempotent — only the first backup wins, so the on-disk copy is always the
-  # upstream original. Skipped by haven untune (sets _HAVEN_SKIP_BACKUP=1) so a
+  # upstream original. Skipped by bulkhead untune (sets _HAVEN_SKIP_BACKUP=1) so a
   # restore never overwrites the pristine snapshot with the just-restored copy.
   if [ "${_HAVEN_SKIP_BACKUP:-0}" != "1" ]; then
     _tune_backup_modelfile "${model}" || true
@@ -1015,8 +1018,8 @@ _params_recreate() {
   local tmpfile="/tmp/haven_mf_$$"
   if ! printf '%s\n' "${modelfile}" \
        | docker exec -i "$(_haven_container ollama)" sh -c "cat > '${tmpfile}'" 2>/dev/null; then
-    echo -e "${RED}[InferHaven]${NC} Could not write Modelfile to Ollama container." >&2
-    echo "  Is the Ollama container running?  haven status" >&2
+    echo -e "${RED}[Bulkhead]${NC} Could not write Modelfile to Ollama container." >&2
+    echo "  Is the Ollama container running?  bulkhead status" >&2
     return 1
   fi
 
@@ -1027,7 +1030,7 @@ _params_recreate() {
   docker exec "$(_haven_container ollama)" rm -f "${tmpfile}" 2>/dev/null || true
 
   if [ "${exit_code}" -ne 0 ]; then
-    echo -e "${RED}[InferHaven]${NC} Ollama could not apply Modelfile:" >&2
+    echo -e "${RED}[Bulkhead]${NC} Ollama could not apply Modelfile:" >&2
     printf '%s\n' "${output}" | head -5 | sed 's/^/  /' >&2
     return 1
   fi
@@ -1060,12 +1063,12 @@ _params_list() {
   if [ -z "${params}" ]; then
     echo "  (no custom parameters — using Ollama defaults)"
     echo ""
-    echo "  Set one with: haven params ${model} set <key> <value>"
+    echo "  Set one with: bulkhead params ${model} set <key> <value>"
   else
     echo "${params}" | awk '{print "  " $0}'
     echo ""
-    echo "  Change:  haven params ${model} set <key> <value>"
-    echo "  Reset:   haven params ${model} reset"
+    echo "  Change:  bulkhead params ${model} set <key> <value>"
+    echo "  Reset:   bulkhead params ${model} reset"
   fi
   echo ""
 }
@@ -1082,14 +1085,14 @@ _params_apply() {
   show_resp=$(curl -sf "${OLLAMA_URL}/api/show" \
     -H "Content-Type: application/json" \
     -d "{\"name\": \"${model}\"}" 2>/dev/null) || {
-    echo -e "${RED}[InferHaven]${NC} Cannot reach Ollama or model '${model}' not found." >&2
+    echo -e "${RED}[Bulkhead]${NC} Cannot reach Ollama or model '${model}' not found." >&2
     return 1
   }
 
   local full_modelfile
   full_modelfile=$(printf '%s' "${show_resp}" | jq -r '.modelfile // ""')
   if [ -z "${full_modelfile}" ]; then
-    echo -e "${RED}[InferHaven]${NC} Could not fetch Modelfile for model '${model}'." >&2
+    echo -e "${RED}[Bulkhead]${NC} Could not fetch Modelfile for model '${model}'." >&2
     return 1
   fi
 
@@ -1098,9 +1101,9 @@ _params_apply() {
   updated=$(printf '%s\n' "${full_modelfile}" | grep -iv "^PARAMETER ${key} " || true)
   updated="${updated}"$'\n'"PARAMETER ${key} ${value}"
 
-  echo -e "${CYAN}[InferHaven]${NC} Applying ${key}=${value} to ${model}..."
+  echo -e "${CYAN}[Bulkhead]${NC} Applying ${key}=${value} to ${model}..."
   if _params_recreate "${model}" "${updated}"; then
-    echo -e "${GREEN}[InferHaven]${NC} Done. Model unloaded — new parameters active on next chat."
+    echo -e "${GREEN}[Bulkhead]${NC} Done. Model unloaded — new parameters active on next chat."
     _haven_sync_all 2>/dev/null || true
   fi
 }
@@ -1115,23 +1118,23 @@ _params_reset() {
   show_resp=$(curl -sf "${OLLAMA_URL}/api/show" \
     -H "Content-Type: application/json" \
     -d "{\"name\": \"${model}\"}" 2>/dev/null) || {
-    echo -e "${RED}[InferHaven]${NC} Cannot reach Ollama or model '${model}' not found." >&2
+    echo -e "${RED}[Bulkhead]${NC} Cannot reach Ollama or model '${model}' not found." >&2
     return 1
   }
 
   local full_modelfile
   full_modelfile=$(printf '%s' "${show_resp}" | jq -r '.modelfile // ""')
   if [ -z "${full_modelfile}" ]; then
-    echo -e "${RED}[InferHaven]${NC} Could not fetch Modelfile for model '${model}'." >&2
+    echo -e "${RED}[Bulkhead]${NC} Could not fetch Modelfile for model '${model}'." >&2
     return 1
   fi
 
   local stripped
   stripped=$(printf '%s\n' "${full_modelfile}" | grep -iv "^PARAMETER " || true)
 
-  echo -e "${YELLOW}[InferHaven]${NC} Resetting parameters for ${model}..."
+  echo -e "${YELLOW}[Bulkhead]${NC} Resetting parameters for ${model}..."
   if _params_recreate "${model}" "${stripped}"; then
-    echo -e "${GREEN}[InferHaven]${NC} All custom parameters removed. Model unloaded — Ollama defaults active on next chat."
+    echo -e "${GREEN}[Bulkhead]${NC} All custom parameters removed. Model unloaded — Ollama defaults active on next chat."
     _haven_sync_all 2>/dev/null || true
   fi
 }
@@ -1550,8 +1553,8 @@ cmd_tune() {
   local model="${1:-}"
   if [ -z "$model" ]; then
     echo ""
-    echo "  Usage: haven tune [--dry-run] <model>"
-    echo "         haven untune <model>            (restore from pre-tune backup)"
+    echo "  Usage: bulkhead tune [--dry-run] <model>"
+    echo "         bulkhead untune <model>            (restore from pre-tune backup)"
     echo ""
     echo "  Provisions an optimised Modelfile for tool-call reliability."
     echo "  Base weights are not re-downloaded — only the Modelfile changes."
@@ -1574,20 +1577,20 @@ cmd_tune() {
     echo "  Everything else (gemma1/4, qwen3.5/3.6, llama2/4, phi3, mixtral, devstral,"
     echo "  custom finetunes, hf.co/* paths) -> generic: only num_ctx is set."
     echo ""
-    echo "  Override detection: HAVEN_FORCE_FAMILY=<family> haven tune <model>"
+    echo "  Override detection: HAVEN_FORCE_FAMILY=<family> bulkhead tune <model>"
     echo "                      Valid values: qwen3 qwen25 llama3 deepseek mistral phi4 codellama gemma"
     echo ""
-    echo "  Server-side memory knobs (set via .env, reported by haven tune):"
-    echo "    OLLAMA_FLASH_ATTENTION=1   (faster; disable on AMD/Vulkan + Gemma3 — see haven doctor)"
+    echo "  Server-side memory knobs (set via .env, reported by bulkhead tune):"
+    echo "    OLLAMA_FLASH_ATTENTION=1   (faster; disable on AMD/Vulkan + Gemma3 — see bulkhead doctor)"
     echo "    OLLAMA_KV_CACHE_TYPE=q8_0  (saves VRAM; f16 is the safest default on AMD/Vulkan)"
     echo ""
     echo "  Examples:"
-    echo "    haven tune qwen2.5-coder:7b"
-    echo "    haven tune qwen3-coder:30b"
-    echo "    haven tune llama3.1:8b"
-    echo "    haven tune --dry-run qwen3:8b"
-    echo "    HAVEN_FORCE_FAMILY=qwen3 haven tune my-custom-qwen3-finetune:7b"
-    echo "    haven untune <model>             # restore pre-tune Modelfile"
+    echo "    bulkhead tune qwen2.5-coder:7b"
+    echo "    bulkhead tune qwen3-coder:30b"
+    echo "    bulkhead tune llama3.1:8b"
+    echo "    bulkhead tune --dry-run qwen3:8b"
+    echo "    HAVEN_FORCE_FAMILY=qwen3 bulkhead tune my-custom-qwen3-finetune:7b"
+    echo "    bulkhead untune <model>             # restore pre-tune Modelfile"
     echo ""
     exit 0
   fi
@@ -1595,13 +1598,13 @@ cmd_tune() {
   local family
   family=$(_tune_detect_family "$model")
 
-  echo -e "${CYAN}[InferHaven]${NC} Tuning ${model} (family: ${family})..."
+  echo -e "${CYAN}[Bulkhead]${NC} Tuning ${model} (family: ${family})..."
   if [ -n "${HAVEN_FORCE_FAMILY:-}" ]; then
     echo -e "  ${YELLOW}HAVEN_FORCE_FAMILY${NC} active — forced family: ${family}."
   elif [ "$family" = "generic" ]; then
     echo -e "  ${YELLOW}Note:${NC} '${model}' did not match a tested family — safe defaults only (context window)."
     echo    "        TEMPLATE, SYSTEM, and all other PARAMETER lines preserved verbatim."
-    echo    "        Override with: HAVEN_FORCE_FAMILY=<qwen3|qwen25|llama3|deepseek|mistral|phi4|codellama|gemma> haven tune ${model}"
+    echo    "        Override with: HAVEN_FORCE_FAMILY=<qwen3|qwen25|llama3|deepseek|mistral|phi4|codellama|gemma> bulkhead tune ${model}"
   fi
 
   # Fetch the current Modelfile + model metadata in one request
@@ -1614,8 +1617,8 @@ cmd_tune() {
   modelfile=$(printf '%s' "${show_resp}" | jq -r '.modelfile // empty')
 
   if [ -z "$modelfile" ]; then
-    echo -e "${RED}[InferHaven]${NC} Could not fetch Modelfile for '${model}'."
-    echo "  Is the model pulled? Run: haven pull ${model}"
+    echo -e "${RED}[Bulkhead]${NC} Could not fetch Modelfile for '${model}'."
+    echo "  Is the model pulled? Run: bulkhead pull ${model}"
     exit 1
   fi
 
@@ -1733,9 +1736,9 @@ cmd_tune() {
   echo "  Uploading tuned Modelfile..."
   if _params_recreate "${model}" "${new_modelfile}"; then
     if [ "$family" = "generic" ]; then
-      echo -e "${GREEN}[InferHaven]${NC} '${model}' context window optimised. Model unloaded — active on next chat."
+      echo -e "${GREEN}[Bulkhead]${NC} '${model}' context window optimised. Model unloaded — active on next chat."
     else
-      echo -e "${GREEN}[InferHaven]${NC} '${model}' tuned for coding assistant use. Model unloaded — active on next chat."
+      echo -e "${GREEN}[Bulkhead]${NC} '${model}' tuned for coding assistant use. Model unloaded — active on next chat."
     fi
     if [ "$ctx_changed" -eq 1 ]; then
       echo "  Context window: set to ${target_ctx} tokens (was: ${existing_ctx:-unset})"
@@ -1766,16 +1769,16 @@ cmd_tune() {
 
 # ── Untune ────────────────────────────────────────────────────────────────────
 # Restore a model's Modelfile from the pre-tune backup snapshot taken on the
-# first haven tune / params set / params reset. The backup lives at
+# first bulkhead tune / params set / params reset. The backup lives at
 # ~/.haven/modelfile-backups/<slug>.modelfile in the workspace_home volume.
 cmd_untune() {
   local model="${1:-}"
   if [ -z "$model" ]; then
     echo ""
-    echo "  Usage: haven untune <model>"
+    echo "  Usage: bulkhead untune <model>"
     echo ""
     echo "  Restores the Modelfile to the snapshot taken before the first"
-    echo "  haven tune / params set / params reset modification."
+    echo "  bulkhead tune / params set / params reset modification."
     echo ""
     echo "  Backup location: ~/.haven/modelfile-backups/<slug>.modelfile"
     echo ""
@@ -1785,17 +1788,17 @@ cmd_untune() {
   slug=$(_model_slug "${model}")
   backup="${HOME}/.haven/modelfile-backups/${slug}.modelfile"
   if [ ! -f "${backup}" ]; then
-    echo -e "${YELLOW}[InferHaven]${NC} No backup found for '${model}'."
+    echo -e "${YELLOW}[Bulkhead]${NC} No backup found for '${model}'."
     echo "  (Backups are taken on the first tune / params modification — this model has not been modified by haven.)"
     exit 1
   fi
-  echo -e "${CYAN}[InferHaven]${NC} Restoring '${model}' Modelfile from backup..."
+  echo -e "${CYAN}[Bulkhead]${NC} Restoring '${model}' Modelfile from backup..."
   local mf
   mf=$(cat "${backup}")
   # Skip the backup hook in _params_recreate so we don't overwrite the pristine
   # snapshot with the just-restored copy.
   if _HAVEN_SKIP_BACKUP=1 _params_recreate "${model}" "${mf}"; then
-    echo -e "${GREEN}[InferHaven]${NC} '${model}' restored. Model unloaded — original parameters active on next chat."
+    echo -e "${GREEN}[Bulkhead]${NC} '${model}' restored. Model unloaded — original parameters active on next chat."
     echo "  Backup retained at: ${backup}"
     _haven_sync_all 2>/dev/null || true
   fi
@@ -1803,24 +1806,24 @@ cmd_untune() {
 
 cmd_chat() {
   local model="${1:-${DEFAULT_MODEL:-qwen2.5-coder:7b}}"
-  echo -e "${CYAN}[InferHaven]${NC} Chatting with ${model} (Ctrl+D or /bye to exit)..."
+  echo -e "${CYAN}[Bulkhead]${NC} Chatting with ${model} (Ctrl+D or /bye to exit)..."
   echo ""
   docker exec -it "$(_haven_container ollama)" ollama run "${model}"
 }
 
-# ── haven run — direct ollama run wrapper (interactive or one-shot) ───────────
+# ── bulkhead run — direct ollama run wrapper (interactive or one-shot) ───────────
 # Mirrors `ollama run` exactly. When called with only a model name, drops into
 # an interactive session. When called with a prompt argument, runs non-
 # interactively and exits — useful for scripting and quick one-liners.
 #
 # Examples:
-#   haven run qwen3-coder:30b
-#   haven run qwen3-coder:30b "Explain tail call optimisation in three sentences"
-#   echo "What is 2+2?" | haven run qwen3-coder:30b
+#   bulkhead run qwen3-coder:30b
+#   bulkhead run qwen3-coder:30b "Explain tail call optimisation in three sentences"
+#   echo "What is 2+2?" | bulkhead run qwen3-coder:30b
 cmd_run() {
   if [ -z "${1:-}" ]; then
     echo ""
-    echo -e "  ${RED}✗${NC} Usage: haven run <model> [prompt]"
+    echo -e "  ${RED}✗${NC} Usage: bulkhead run <model> [prompt]"
     echo ""
     exit 1
   fi
@@ -1849,12 +1852,12 @@ cmd_run() {
   fi
 }
 
-# ── haven bench — local model tokens/sec benchmark ────────────────────────────
+# ── bulkhead bench — local model tokens/sec benchmark ────────────────────────────
 # Measures generation speed via Ollama /api/generate (non-stream). Headline
 # number = generation tok/s = eval_count / (eval_duration/1e9); eval_duration
 # excludes model load + prompt eval, so it's the honest decode rate even cold.
 # Ollama-only (uses /api/generate). Read-only — never writes a Modelfile.
-#   haven bench [model] [--tokens N] [--prompt "..."] [--runs K] [--json]
+#   bulkhead bench [model] [--tokens N] [--prompt "..."] [--runs K] [--json]
 cmd_bench() {
   # defaults
   local model="" tokens=256 runs=1 json=0
@@ -1866,7 +1869,7 @@ cmd_bench() {
       --json)   json=1;      shift   ;;
       --tokens) tokens="$2"; shift 2 ;;
       --runs)   runs="$2";   shift 2 ;;
-      -*)       echo "haven bench: unknown flag $1" >&2; exit 1 ;;
+      -*)       echo "bulkhead bench: unknown flag $1" >&2; exit 1 ;;
       *)        model="$1";  shift   ;;
     esac
   done
@@ -1881,7 +1884,7 @@ cmd_bench() {
 
   # Guard 2: model present locally?
   if ! _haven_models_list | grep -qxF "${model}"; then
-    echo "model '${model}' not found — pull it using: haven pull ${model}" >&2
+    echo "model '${model}' not found — pull it using: bulkhead pull ${model}" >&2
     exit 1
   fi
 
@@ -1920,7 +1923,7 @@ cmd_bench() {
   # ── Block 4 — human-readable ────────────────────────────────────────────────
   local avg_note=""
   [ "${runs}" -gt 1 ] && avg_note=" (avg of ${runs} runs)"
-  printf '\n  %bInferHaven bench%b — %s\n' "${BOLD}" "${NC}" "${model}"
+  printf '\n  %bBulkhead bench%b — %s\n' "${BOLD}" "${NC}" "${model}"
   if [ "${runs}" -gt 1 ]; then
     local idx=1 g
     while IFS= read -r g; do
@@ -1936,11 +1939,11 @@ cmd_bench() {
   printf '  %bmethod%b       num_predict=%s, seed=0, temp=0, runs=%s\n\n' "${CYAN}" "${NC}" "${tokens}" "${runs}"
 }
 
-# ── haven push — push a model to ollama.com ───────────────────────────────────
+# ── bulkhead push — push a model to ollama.com ───────────────────────────────────
 cmd_push() {
   if [ -z "${1:-}" ]; then
     echo ""
-    echo -e "  ${RED}✗${NC} Usage: haven push <model>"
+    echo -e "  ${RED}✗${NC} Usage: bulkhead push <model>"
     echo "         Model must be in your ollama.com namespace, e.g. myuser/mymodel:tag"
     echo ""
     exit 1
@@ -1948,7 +1951,7 @@ cmd_push() {
   docker exec -it "$(_haven_container ollama)" ollama push "$@"
 }
 
-# ── haven signin / signout — ollama.com authentication ───────────────────────
+# ── bulkhead signin / signout — ollama.com authentication ───────────────────────
 cmd_signin() {
   docker exec -it "$(_haven_container ollama)" ollama login "$@"
 }
@@ -1957,7 +1960,7 @@ cmd_signout() {
   docker exec -it "$(_haven_container ollama)" ollama logout "$@"
 }
 
-# ── haven claude — Claude Code with local Ollama models ──────────────────────
+# ── bulkhead claude — Claude Code with local Ollama models ──────────────────────
 # Launches Claude Code pointed at the container-internal Ollama endpoint.
 # Model selection:
 #   0 models  → error with a helpful hint
@@ -1986,7 +1989,7 @@ cmd_claude() {
   if [ "${model_count}" -eq 0 ]; then
     echo ""
     echo -e "  ${YELLOW}⚠${NC}  No local models found."
-    echo "  Pull a model first:  haven pull qwen3-coder:30b"
+    echo "  Pull a model first:  bulkhead pull qwen3-coder:30b"
     echo ""
     exit 1
   fi
@@ -1997,7 +2000,7 @@ cmd_claude() {
     # ── Single model — skip the menu, launch immediately ────────────────────
     selected_model=$(printf '%s' "${tags_json}" | jq -r '.models[0].name')
     echo ""
-    echo -e "  ${CYAN}[InferHaven]${NC} Using local model: ${BOLD}${selected_model}${NC}"
+    echo -e "  ${CYAN}[Bulkhead]${NC} Using local model: ${BOLD}${selected_model}${NC}"
   else
     # ── Multiple models — build a formatted display table ───────────────────
     # Columns: MODEL (left-aligned, 44 chars), PARAMS (10 chars), SIZE
@@ -2022,7 +2025,7 @@ cmd_claude() {
           --height=60% \
           --min-height=10 \
           --border=rounded \
-          --border-label="  haven claude — local models  " \
+          --border-label="  bulkhead claude — local models  " \
           --border-label-pos=3 \
           --no-sort \
           --color="header:cyan:bold,border:cyan,label:cyan,prompt:cyan,pointer:green" \
@@ -2102,11 +2105,11 @@ cmd_claude() {
   # regardless of num_ctx — Claude Code's /context display will show that larger
   # number, but compaction triggers at the value we set here (the actual model
   # context). The "Autocompact buffer" percentage in /context reflects this value.
-  echo -e "  ${CYAN}[InferHaven]${NC} Endpoint: ${OLLAMA_URL}"
+  echo -e "  ${CYAN}[Bulkhead]${NC} Endpoint: ${OLLAMA_URL}"
   if [ "${ctx_display}" != "${ctx}" ]; then
-    echo -e "  ${CYAN}[InferHaven]${NC} Context:  ${ctx} tokens (model supports ${ctx_display} — capped by CLAUDE_CTX_LIMIT)"
+    echo -e "  ${CYAN}[Bulkhead]${NC} Context:  ${ctx} tokens (model supports ${ctx_display} — capped by CLAUDE_CTX_LIMIT)"
   else
-    echo -e "  ${CYAN}[InferHaven]${NC} Context:  ${ctx} tokens (auto-compact threshold; /context display may show Ollama API value)"
+    echo -e "  ${CYAN}[Bulkhead]${NC} Context:  ${ctx} tokens (auto-compact threshold; /context display may show Ollama API value)"
   fi
   echo ""
   ANTHROPIC_AUTH_TOKEN="ollama" \
@@ -2117,7 +2120,7 @@ cmd_claude() {
     exec claude --model "${selected_model}"
 }
 
-# ── haven aider — Aider with local Ollama models ─────────────────────────────
+# ── bulkhead aider — Aider with local Ollama models ─────────────────────────────
 # Launches Aider pointed at the container-internal Ollama endpoint.
 # Uses the ollama_chat/ prefix (recommended by Aider docs over ollama/).
 # Model selection:
@@ -2146,7 +2149,7 @@ cmd_aider() {
   if [ "${model_count}" -eq 0 ]; then
     echo ""
     echo -e "  ${YELLOW}⚠${NC}  No local models found."
-    echo "  Pull a model first:  haven pull qwen2.5-coder:7b"
+    echo "  Pull a model first:  bulkhead pull qwen2.5-coder:7b"
     echo ""
     exit 1
   fi
@@ -2157,7 +2160,7 @@ cmd_aider() {
     # ── Single model — skip the menu, launch immediately ────────────────────
     selected_model=$(printf '%s' "${tags_json}" | jq -r '.models[0].name')
     echo ""
-    echo -e "  ${CYAN}[InferHaven]${NC} Using local model: ${BOLD}${selected_model}${NC}"
+    echo -e "  ${CYAN}[Bulkhead]${NC} Using local model: ${BOLD}${selected_model}${NC}"
   else
     # ── Multiple models — build a formatted display table ───────────────────
     local display_list
@@ -2181,7 +2184,7 @@ cmd_aider() {
           --height=60% \
           --min-height=10 \
           --border=rounded \
-          --border-label="  haven aider — local models  " \
+          --border-label="  bulkhead aider — local models  " \
           --border-label-pos=3 \
           --no-sort \
           --color="header:cyan:bold,border:cyan,label:cyan,prompt:cyan,pointer:green" \
@@ -2223,13 +2226,13 @@ cmd_aider() {
   ctx=$(_haven_model_ctx "${selected_model}")
 
   # Sync ~/.aider.model.settings.yml now so extra_params.num_ctx reflects the
-  # freshest value — covers the case where 'haven params' was used
+  # freshest value — covers the case where 'bulkhead params' was used
   # to change num_ctx after the last automatic sync.
   _sync_aider_models 2>/dev/null || true
 
   # ── Launch ─────────────────────────────────────────────────────────────────
-  echo -e "  ${CYAN}[InferHaven]${NC} Endpoint: ${OLLAMA_URL}"
-  echo -e "  ${CYAN}[InferHaven]${NC} Context:  ${ctx} tokens"
+  echo -e "  ${CYAN}[Bulkhead]${NC} Endpoint: ${OLLAMA_URL}"
+  echo -e "  ${CYAN}[Bulkhead]${NC} Context:  ${ctx} tokens"
   echo ""
   # Unset cloud API keys so Aider routes exclusively to Ollama — prevents
   # conflict when ANTHROPIC_API_KEY / OPENAI_API_KEY are set in the environment.
@@ -2239,7 +2242,7 @@ cmd_aider() {
     exec aider --model "ollama_chat/${selected_model}"
 }
 
-# ── haven qwen — Qwen Code with local Ollama models ──────────────────────────
+# ── bulkhead qwen — Qwen Code with local Ollama models ──────────────────────────
 # Launches Qwen Code pointed at the container-internal Ollama endpoint.
 # Model selection:
 #   0 models  → error with a helpful hint
@@ -2268,7 +2271,7 @@ cmd_qwen() {
   if [ "${model_count}" -eq 0 ]; then
     echo ""
     echo -e "  ${YELLOW}⚠${NC}  No local models found."
-    echo "  Pull a model first:  haven pull qwen2.5-coder:7b"
+    echo "  Pull a model first:  bulkhead pull qwen2.5-coder:7b"
     echo ""
     exit 1
   fi
@@ -2279,7 +2282,7 @@ cmd_qwen() {
     # ── Single model — skip the menu, launch immediately ────────────────────
     selected_model=$(printf '%s' "${tags_json}" | jq -r '.models[0].name')
     echo ""
-    echo -e "  ${CYAN}[InferHaven]${NC} Using local model: ${BOLD}${selected_model}${NC}"
+    echo -e "  ${CYAN}[Bulkhead]${NC} Using local model: ${BOLD}${selected_model}${NC}"
   else
     # ── Multiple models — build a formatted display table ───────────────────
     local display_list
@@ -2303,7 +2306,7 @@ cmd_qwen() {
           --height=60% \
           --min-height=10 \
           --border=rounded \
-          --border-label="  haven qwen — local models  " \
+          --border-label="  bulkhead qwen — local models  " \
           --border-label-pos=3 \
           --no-sort \
           --color="header:cyan:bold,border:cyan,label:cyan,prompt:cyan,pointer:green" \
@@ -2345,18 +2348,18 @@ cmd_qwen() {
   ctx=$(_haven_model_ctx "${selected_model}")
 
   # Sync settings.json so the selected model is set as default and context
-  # reflects the freshest num_ctx value (covers haven params changes).
+  # reflects the freshest num_ctx value (covers bulkhead params changes).
   _sync_qwencode_models 2>/dev/null || true
 
   # ── Launch ─────────────────────────────────────────────────────────────────
-  echo -e "  ${CYAN}[InferHaven]${NC} Endpoint: ${OLLAMA_URL}"
-  echo -e "  ${CYAN}[InferHaven]${NC} Context:  ${ctx} tokens"
+  echo -e "  ${CYAN}[Bulkhead]${NC} Endpoint: ${OLLAMA_URL}"
+  echo -e "  ${CYAN}[Bulkhead]${NC} Context:  ${ctx} tokens"
   echo ""
   OLLAMA_API_KEY="ollama" \
     exec qwen --auth-type openai -m "${selected_model}"
 }
 
-# ── haven goose — Goose with local Ollama models ─────────────────────────────
+# ── bulkhead goose — Goose with local Ollama models ─────────────────────────────
 # Launches Goose pointed at the container-internal Ollama endpoint.
 # Model selection:
 #   0 models  → error with a helpful hint
@@ -2387,7 +2390,7 @@ cmd_goose() {
   if [ "${model_count}" -eq 0 ]; then
     echo ""
     echo -e "  ${YELLOW}⚠${NC}  No local models found."
-    echo "  Pull a model first:  haven pull qwen2.5-coder:7b"
+    echo "  Pull a model first:  bulkhead pull qwen2.5-coder:7b"
     echo ""
     exit 1
   fi
@@ -2410,7 +2413,7 @@ cmd_goose() {
     # ── Single model — skip the menu, launch immediately ────────────────────
     selected_model=$(printf '%s' "${tags_json}" | jq -r '.models[0].name')
     echo ""
-    echo -e "  ${CYAN}[InferHaven]${NC} Using local model: ${BOLD}${selected_model}${NC}"
+    echo -e "  ${CYAN}[Bulkhead]${NC} Using local model: ${BOLD}${selected_model}${NC}"
   else
     # ── Multiple models — fzf picker or numbered list ───────────────────────
     if command -v fzf &>/dev/null; then
@@ -2422,7 +2425,7 @@ cmd_goose() {
           --height=60% \
           --min-height=10 \
           --border=rounded \
-          --border-label="  haven goose — local models  " \
+          --border-label="  bulkhead goose — local models  " \
           --border-label-pos=3 \
           --no-sort \
           --color="header:cyan:bold,border:cyan,label:cyan,prompt:cyan,pointer:green" \
@@ -2485,7 +2488,7 @@ cmd_goose() {
         --height=12 \
         --min-height=8 \
         --border=rounded \
-        --border-label="  haven goose — Ollama tool shim  " \
+        --border-label="  bulkhead goose — Ollama tool shim  " \
         --border-label-pos=3 \
         --no-sort \
         --color="header:cyan:bold,border:cyan,label:cyan,prompt:cyan,pointer:green" \
@@ -2509,7 +2512,7 @@ cmd_goose() {
             --height=60% \
             --min-height=10 \
             --border=rounded \
-            --border-label="  haven goose — shim interpreter model  " \
+            --border-label="  bulkhead goose — shim interpreter model  " \
             --border-label-pos=3 \
             --no-sort \
             --color="header:cyan:bold,border:cyan,label:cyan,prompt:cyan,pointer:green" \
@@ -2563,7 +2566,7 @@ cmd_goose() {
       '.models[].name | select(. == $m)' > /dev/null 2>&1; then
     echo ""
     echo -e "  ${RED}✗${NC} Model '${selected_model}' is no longer available in Ollama."
-    echo -e "  Run 'haven pull ${selected_model}' to restore it, or choose a different model."
+    echo -e "  Run 'bulkhead pull ${selected_model}' to restore it, or choose a different model."
     echo ""
     exit 1
   fi
@@ -2587,15 +2590,15 @@ cmd_goose() {
   fi
 
   # ── Launch ──────────────────────────────────────────────────────────────────
-  echo -e "  ${CYAN}[InferHaven]${NC} Endpoint:   ${OLLAMA_URL}"
+  echo -e "  ${CYAN}[Bulkhead]${NC} Endpoint:   ${OLLAMA_URL}"
   if [ "${ctx_display}" != "${ctx}" ]; then
-    echo -e "  ${CYAN}[InferHaven]${NC} Context:    ${ctx} tokens (model supports ${ctx_display} — capped; set GOOSE_CTX_LIMIT to override)"
+    echo -e "  ${CYAN}[Bulkhead]${NC} Context:    ${ctx} tokens (model supports ${ctx_display} — capped; set GOOSE_CTX_LIMIT to override)"
   else
-    echo -e "  ${CYAN}[InferHaven]${NC} Context:    ${ctx} tokens"
+    echo -e "  ${CYAN}[Bulkhead]${NC} Context:    ${ctx} tokens"
   fi
   if [ "${toolshim_enabled}" -eq 1 ]; then
-    echo -e "  ${CYAN}[InferHaven]${NC} Tool shim:  enabled  (interpreter: ${shim_model})"
-    echo -e "  ${YELLOW}[InferHaven]${NC} Note: tool shim holds two model instances simultaneously — may cause OOM on memory-constrained hardware."
+    echo -e "  ${CYAN}[Bulkhead]${NC} Tool shim:  enabled  (interpreter: ${shim_model})"
+    echo -e "  ${YELLOW}[Bulkhead]${NC} Note: tool shim holds two model instances simultaneously — may cause OOM on memory-constrained hardware."
   fi
   echo ""
 
@@ -2649,7 +2652,7 @@ cmd_status() {
       echo -e "  Ollama auth: ${GREEN}● authenticated${NC}"
     fi
   else
-    echo -e "  Ollama auth: ${YELLOW}● not signed in${NC}  (run: haven signin)"
+    echo -e "  Ollama auth: ${YELLOW}● not signed in${NC}  (run: bulkhead signin)"
   fi
   echo ""
 }
@@ -2665,7 +2668,7 @@ cmd_logs() {
 # ── SSH / IDE info ────────────────────────────────────────────────────────────
 cmd_ssh_key() {
   if [ -z "${1:-}" ]; then
-    echo "Usage: haven ssh-key \"ssh-ed25519 AAAA... user@host\""
+    echo "Usage: bulkhead ssh-key \"ssh-ed25519 AAAA... user@host\""
     exit 1
   fi
   add-ssh-key "$1"
@@ -2692,7 +2695,7 @@ cmd_ssh() {
   local PORT="${SSH_PORT:-2222}"
   local HOST; HOST="$(_resolve_host)"
   echo ""
-  echo -e "  ${CYAN}SSH into InferHaven:${NC}"
+  echo -e "  ${CYAN}SSH into Bulkhead:${NC}"
   echo "    ssh -p ${PORT} haven@${HOST}"
   if [ "$HOST" = "localhost" ]; then
     echo ""
@@ -2723,18 +2726,18 @@ cmd_ide() {
 }
 
 # ── tmux workspace manager ────────────────────────────────────────────────────
-# 'haven tmux' is the unified tmux interface. The 'Haven' session is always
+# 'bulkhead tmux' is the unified tmux interface. The 'Haven' session is always
 # running and auto-restored after every container restart via tmux-continuum
 # (auto-saves every 15 min) + tmux-resurrect. No manual setup required.
 #
-# 'haven session' is kept as a backward-compatible alias.
+# 'bulkhead session' is kept as a backward-compatible alias.
 
 _tmux_attach() {
   local name="${1:-Haven}"
   if tmux has-session -t "${name}" 2>/dev/null; then
     exec tmux attach-session -t "${name}"
   else
-    echo -e "${CYAN}[InferHaven]${NC} Creating session '${name}'..."
+    echo -e "${CYAN}[Bulkhead]${NC} Creating session '${name}'..."
     exec tmux new-session -s "${name}"
   fi
 }
@@ -2746,7 +2749,7 @@ _tmux_new_switch() {
   read -r new_name
   [ -z "${new_name}" ] && return 0
   if tmux has-session -t "${new_name}" 2>/dev/null; then
-    echo -e "${YELLOW}[InferHaven]${NC} Session '${new_name}' already exists — switching."
+    echo -e "${YELLOW}[Bulkhead]${NC} Session '${new_name}' already exists — switching."
   else
     tmux new-session -d -s "${new_name}"
   fi
@@ -2760,7 +2763,7 @@ _tmux_new_attach() {
   read -r new_name
   [ -z "${new_name}" ] && return 0
   if tmux has-session -t "${new_name}" 2>/dev/null; then
-    echo -e "${YELLOW}[InferHaven]${NC} Session '${new_name}' already exists — attaching."
+    echo -e "${YELLOW}[Bulkhead]${NC} Session '${new_name}' already exists — attaching."
     exec tmux attach-session -t "${new_name}"
   else
     exec tmux new-session -s "${new_name}"
@@ -2774,7 +2777,7 @@ _tmux_smart_attach() {
 
   # If no tmux server / no sessions, create and attach Haven
   sessions=$(tmux list-sessions -F "#{session_name}" 2>/dev/null) || {
-    echo -e "${CYAN}[InferHaven]${NC} Creating Haven session..."
+    echo -e "${CYAN}[Bulkhead]${NC} Creating Haven session..."
     exec tmux new-session -s Haven
   }
 
@@ -2854,22 +2857,22 @@ cmd_tmux() {
       ;;
 
     ls|list)
-      echo -e "${CYAN}[InferHaven]${NC} Active tmux sessions:"
+      echo -e "${CYAN}[Bulkhead]${NC} Active tmux sessions:"
       tmux list-sessions 2>/dev/null \
-        || echo "  No sessions running. Start one with: haven tmux"
+        || echo "  No sessions running. Start one with: bulkhead tmux"
       ;;
 
     new)
       local name="${1:-}"
       if [ -z "${name}" ]; then
-        echo "Usage: haven tmux new <name>"
+        echo "Usage: bulkhead tmux new <name>"
         exit 1
       fi
       if tmux has-session -t "${name}" 2>/dev/null; then
-        echo -e "${YELLOW}[InferHaven]${NC} Session '${name}' already exists — attaching."
+        echo -e "${YELLOW}[Bulkhead]${NC} Session '${name}' already exists — attaching."
         exec tmux attach-session -t "${name}"
       else
-        echo -e "${CYAN}[InferHaven]${NC} Creating session '${name}'..."
+        echo -e "${CYAN}[Bulkhead]${NC} Creating session '${name}'..."
         exec tmux new-session -s "${name}"
       fi
       ;;
@@ -2877,20 +2880,20 @@ cmd_tmux() {
     kill)
       local name="${1:-}"
       if [ -z "${name}" ]; then
-        echo "Usage: haven tmux kill <name>"
+        echo "Usage: bulkhead tmux kill <name>"
         echo ""
         tmux list-sessions 2>/dev/null || echo "No sessions running."
         exit 1
       fi
       if [ "${name}" = "Haven" ]; then
-        echo -e "${YELLOW}[InferHaven]${NC} Killing 'Haven' will destroy it until the next container restart."
+        echo -e "${YELLOW}[Bulkhead]${NC} Killing 'Haven' will destroy it until the next container restart."
         read -r -p "  Confirm? (y/N): " _confirm
         [ "${_confirm}" = "y" ] || { echo "Cancelled."; exit 0; }
       fi
       if tmux kill-session -t "${name}" 2>/dev/null; then
-        echo -e "${GREEN}[InferHaven]${NC} Session '${name}' killed."
+        echo -e "${GREEN}[Bulkhead]${NC} Session '${name}' killed."
       else
-        echo -e "${RED}[InferHaven]${NC} Session '${name}' not found."
+        echo -e "${RED}[Bulkhead]${NC} Session '${name}' not found."
         exit 1
       fi
       ;;
@@ -2898,14 +2901,14 @@ cmd_tmux() {
     save)
       local resurrect_save="${HOME}/.tmux/plugins/tmux-resurrect/scripts/save.sh"
       if [ ! -f "${resurrect_save}" ]; then
-        echo -e "${RED}[InferHaven]${NC} tmux-resurrect not found. Run: haven tmux plugin install"
+        echo -e "${RED}[Bulkhead]${NC} tmux-resurrect not found. Run: bulkhead tmux plugin install"
         exit 1
       fi
       if ! tmux list-sessions >/dev/null 2>&1; then
-        echo -e "${RED}[InferHaven]${NC} No tmux sessions running — nothing to save."
+        echo -e "${RED}[Bulkhead]${NC} No tmux sessions running — nothing to save."
         exit 1
       fi
-      echo -e "${CYAN}[InferHaven]${NC} Saving session structure..."
+      echo -e "${CYAN}[Bulkhead]${NC} Saving session structure..."
       "${resurrect_save}"
       # Strip ephemeral popup sessions — same cleanup as the periodic save in entrypoint
       local last="${HOME}/.tmux/resurrect/last"
@@ -2913,27 +2916,27 @@ cmd_tmux() {
         local target; target=$(readlink -f "${last}")
         grep -v "haven-popup-" "${target}" > "${target}.tmp" && mv "${target}.tmp" "${target}"
       fi
-      echo -e "${CYAN}[InferHaven]${NC} Saving pane content and running processes..."
+      echo -e "${CYAN}[Bulkhead]${NC} Saving pane content and running processes..."
       /usr/local/bin/ih-pane-capture
-      echo -e "${GREEN}[InferHaven]${NC} Saved to ~/.tmux/resurrect/"
+      echo -e "${GREEN}[Bulkhead]${NC} Saved to ~/.tmux/resurrect/"
       ;;
 
     restore)
       local resurrect_restore="${HOME}/.tmux/plugins/tmux-resurrect/scripts/restore.sh"
       if [ ! -f "${resurrect_restore}" ]; then
-        echo -e "${RED}[InferHaven]${NC} tmux-resurrect not found. Run: haven tmux plugin install"
+        echo -e "${RED}[Bulkhead]${NC} tmux-resurrect not found. Run: bulkhead tmux plugin install"
         exit 1
       fi
       local last="${HOME}/.tmux/resurrect/last"
       if [ ! -e "${last}" ]; then
-        echo -e "${RED}[InferHaven]${NC} No save file found — run 'haven tmux save' first."
+        echo -e "${RED}[Bulkhead]${NC} No save file found — run 'bulkhead tmux save' first."
         exit 1
       fi
-      echo -e "${CYAN}[InferHaven]${NC} Restoring session structure..."
+      echo -e "${CYAN}[Bulkhead]${NC} Restoring session structure..."
       "${resurrect_restore}"
-      echo -e "${CYAN}[InferHaven]${NC} Restoring pane content and processes..."
+      echo -e "${CYAN}[Bulkhead]${NC} Restoring pane content and processes..."
       /usr/local/bin/ih-pane-restore
-      echo -e "${GREEN}[InferHaven]${NC} Restore complete."
+      echo -e "${GREEN}[Bulkhead]${NC} Restore complete."
       ;;
 
     plugin)
@@ -2941,7 +2944,7 @@ cmd_tmux() {
       shift 2>/dev/null || true
       case "${plugin_sub}" in
         list)
-          echo -e "${CYAN}[InferHaven]${NC} Installed tmux plugins:"
+          echo -e "${CYAN}[Bulkhead]${NC} Installed tmux plugins:"
           if [ -d "${HOME}/.tmux/plugins" ]; then
             # shellcheck disable=SC2012,SC2001  # plugin dir names are tmux-controlled; sed indent is fine
             ls -1 "${HOME}/.tmux/plugins/" | sed 's/^/  /'
@@ -2952,23 +2955,23 @@ cmd_tmux() {
         install)
           local tpm="${HOME}/.tmux/plugins/tpm/bin/install_plugins"
           if [ ! -f "${tpm}" ]; then
-            echo -e "${RED}[InferHaven]${NC} TPM not found. Reinstall with: haven tmux plugin bootstrap"
+            echo -e "${RED}[Bulkhead]${NC} TPM not found. Reinstall with: bulkhead tmux plugin bootstrap"
             exit 1
           fi
-          echo -e "${CYAN}[InferHaven]${NC} Installing plugins from ~/.tmux.conf..."
+          echo -e "${CYAN}[Bulkhead]${NC} Installing plugins from ~/.tmux.conf..."
           "${tpm}"
           ;;
         update)
           local tpm="${HOME}/.tmux/plugins/tpm/bin/update_plugins"
           if [ ! -f "${tpm}" ]; then
-            echo -e "${RED}[InferHaven]${NC} TPM not found. Reinstall with: haven tmux plugin bootstrap"
+            echo -e "${RED}[Bulkhead]${NC} TPM not found. Reinstall with: bulkhead tmux plugin bootstrap"
             exit 1
           fi
-          echo -e "${CYAN}[InferHaven]${NC} Updating all tmux plugins..."
+          echo -e "${CYAN}[Bulkhead]${NC} Updating all tmux plugins..."
           "${tpm}" all
           ;;
         bootstrap)
-          echo -e "${CYAN}[InferHaven]${NC} Bootstrapping tmux plugins from scratch..."
+          echo -e "${CYAN}[Bulkhead]${NC} Bootstrapping tmux plugins from scratch..."
           rm -rf "${HOME}/.tmux/plugins"
           mkdir -p "${HOME}/.tmux/plugins" "${HOME}/.tmux/resurrect"
           git clone --depth=1 https://github.com/tmux-plugins/tpm \
@@ -2977,19 +2980,19 @@ cmd_tmux() {
             "${HOME}/.tmux/plugins/tmux-resurrect"
           git clone --depth=1 https://github.com/tmux-plugins/tmux-continuum \
             "${HOME}/.tmux/plugins/tmux-continuum"
-          echo -e "${GREEN}[InferHaven]${NC} Plugins installed. Reload tmux config with: tmux source ~/.tmux.conf"
+          echo -e "${GREEN}[Bulkhead]${NC} Plugins installed. Reload tmux config with: tmux source ~/.tmux.conf"
           ;;
         *)
-          echo "Usage: haven tmux plugin <list|install|update|bootstrap>"
+          echo "Usage: bulkhead tmux plugin <list|install|update|bootstrap>"
           ;;
       esac
       ;;
 
     help)
       echo ""
-      echo -e "  ${CYAN}${BOLD}haven tmux${NC} — persistent tmux workspace manager"
+      echo -e "  ${CYAN}${BOLD}bulkhead tmux${NC} — persistent tmux workspace manager"
       echo ""
-      echo "  Usage: haven tmux [subcommand] [args]"
+      echo "  Usage: bulkhead tmux [subcommand] [args]"
       echo ""
       echo -e "  ${BOLD}Sessions${NC}"
       echo "    (no args)          Smart attach: auto-attach if only Haven exists,"
@@ -3061,7 +3064,7 @@ cmd_apt() {
     install)
       shift
       if [ $# -eq 0 ]; then
-        echo "Usage: haven apt install <package> [package2 ...]"
+        echo "Usage: bulkhead apt install <package> [package2 ...]"
         exit 1
       fi
       touch "${PKG_FILE}"
@@ -3077,7 +3080,7 @@ cmd_apt() {
     remove)
       shift
       if [ $# -eq 0 ]; then
-        echo "Usage: haven apt remove <package> [package2 ...]"
+        echo "Usage: bulkhead apt remove <package> [package2 ...]"
         exit 1
       fi
       touch "${PKG_FILE}"
@@ -3093,7 +3096,7 @@ cmd_apt() {
         cat "${PKG_FILE}"
       else
         echo "No persistent packages tracked yet."
-        echo "Install packages with: haven apt install <package>"
+        echo "Install packages with: bulkhead apt install <package>"
       fi
       ;;
 
@@ -3121,16 +3124,16 @@ cmd_apt() {
       mkdir -p "${REPO_DIR}"
       case "${1:-list}" in
         add)
-          # haven apt repo add <name> "<deb line>" [gpg-key-url]
+          # bulkhead apt repo add <name> "<deb line>" [gpg-key-url]
           # Example:
-          #   haven apt repo add github \
+          #   bulkhead apt repo add github \
           #     "deb [arch=amd64 signed-by=/etc/apt/keyrings/github.gpg] https://cli.github.com/packages stable main" \
           #     https://cli.github.com/packages/githubcli-archive-keyring.gpg
           local repo_name="${2:-}"
           local deb_line="${3:-}"
           local key_url="${4:-}"
           if [ -z "${repo_name}" ] || [ -z "${deb_line}" ]; then
-            echo "Usage: haven apt repo add <name> \"<deb line>\" [gpg-key-url]"
+            echo "Usage: bulkhead apt repo add <name> \"<deb line>\" [gpg-key-url]"
             echo ""
             echo "  <name>        Short identifier (e.g. github, nodesource)"
             echo "  <deb line>    Full deb entry as it would appear in sources.list"
@@ -3155,7 +3158,7 @@ cmd_apt() {
         remove)
           local repo_name="${2:-}"
           if [ -z "${repo_name}" ]; then
-            echo "Usage: haven apt repo remove <name>"
+            echo "Usage: bulkhead apt repo remove <name>"
             exit 1
           fi
           sudo rm -f "/etc/apt/sources.list.d/${repo_name}.list" "/etc/apt/keyrings/${repo_name}.gpg"
@@ -3178,13 +3181,13 @@ cmd_apt() {
             done
           else
             echo "No custom repos configured."
-            echo "Add one with: haven apt repo add <name> \"<deb line>\" [gpg-key-url]"
+            echo "Add one with: bulkhead apt repo add <name> \"<deb line>\" [gpg-key-url]"
           fi
           ;;
 
         help|*)
           echo ""
-          echo "  Usage: haven apt repo <subcommand>"
+          echo "  Usage: bulkhead apt repo <subcommand>"
           echo ""
           echo "  Subcommands:"
           echo "    add <name> \"<deb line>\" [key-url]   Add a repo and optional GPG key"
@@ -3194,7 +3197,7 @@ cmd_apt() {
           echo "  Repos are stored in ~/.apt-repos/ and restored on every container start."
           echo ""
           echo "  Example (GitHub CLI):"
-          echo "    haven apt repo add github \\"
+          echo "    bulkhead apt repo add github \\"
           echo "      \"deb [arch=amd64 signed-by=/etc/apt/keyrings/github.gpg] https://cli.github.com/packages stable main\" \\"
           echo "      https://cli.github.com/packages/githubcli-archive-keyring.gpg"
           echo ""
@@ -3204,7 +3207,7 @@ cmd_apt() {
 
     help|*)
       echo ""
-      echo "  Usage: haven apt <subcommand> [args]"
+      echo "  Usage: bulkhead apt <subcommand> [args]"
       echo ""
       echo "  Subcommands:"
       echo "    install <pkg...>   Install and persist packages across restarts"
@@ -3225,7 +3228,7 @@ cmd_apt() {
 # ── Doctor ────────────────────────────────────────────────────────────────────
 cmd_doctor() {
   echo ""
-  echo -e "  ${CYAN}${BOLD}InferHaven Doctor${NC} — Checking your environment..."
+  echo -e "  ${CYAN}${BOLD}Bulkhead Doctor${NC} — Checking your environment..."
   echo ""
   local ISSUES=0
 
@@ -3237,7 +3240,7 @@ cmd_doctor() {
     echo -e "  Ollama API:        ${GREEN}✓${NC} reachable (${count} downloaded, ${loaded} in memory)"
   else
     echo -e "  Ollama API:        ${RED}✗ not reachable${NC} (${OLLAMA_URL})"
-    echo -e "                     Run from host: ./scripts/haven up"
+    echo -e "                     Run from host: ./scripts/bulkhead up"
     ISSUES=$((ISSUES + 1))
   fi
 
@@ -3361,7 +3364,7 @@ cmd_doctor() {
   done
 
   # ── Ollama backend (AMD / Vulkan known-bad-combo warnings) ───────────────
-  # InferHaven never modifies Ollama's GPU layer offload or backend selection;
+  # Bulkhead never modifies Ollama's GPU layer offload or backend selection;
   # this section just surfaces known-broken upstream combinations so users can
   # spot them before they manifest as "nonsense output" or "33% offload"
   # symptoms (typically: Gemma3 + Vulkan + flash attention).
@@ -3484,7 +3487,7 @@ cmd_doctor() {
   echo ""
   echo "  ──────────────────────────────────────────"
   if [ "$ISSUES" -eq 0 ]; then
-    echo -e "  ${GREEN}✓ All checks passed. InferHaven is ready.${NC}"
+    echo -e "  ${GREEN}✓ All checks passed. Bulkhead is ready.${NC}"
   elif [ "$ISSUES" -le 2 ]; then
     echo -e "  ${YELLOW}⚠ ${ISSUES} minor issue(s) found. See above.${NC}"
   else
@@ -3497,7 +3500,7 @@ cmd_doctor() {
 cmd_service() {
   local svc="${1:-}" action="${2:-status}"
   if [ -z "${svc}" ]; then
-    echo "Usage: haven service <name> {status|restart|stop|start|logs}"
+    echo "Usage: bulkhead service <name> {status|restart|stop|start|logs}"
     echo "Services: ollama, workspace, code-server, caddy"
     return 1
   fi
@@ -3593,11 +3596,11 @@ cmd_gpu_info() {
 # See: https://github.com/tmate-io/tmate-ssh-server
 #
 # Subcommands:
-#   haven tmate                  start (or print existing) URLs, then return
-#   haven tmate configure        interactive wizard or flag-based server setup
-#   haven tmate status           print current state + server config
-#   haven tmate kill             tear down the active session
-#   haven tmate fg               attach to the tmate session in this terminal
+#   bulkhead tmate                  start (or print existing) URLs, then return
+#   bulkhead tmate configure        interactive wizard or flag-based server setup
+#   bulkhead tmate status           print current state + server config
+#   bulkhead tmate kill             tear down the active session
+#   bulkhead tmate fg               attach to the tmate session in this terminal
 #
 # Env vars (pre-configure self-hosted server via .env):
 #   TMATE_SERVER_HOST            hostname / IP of self-hosted tmate server
@@ -3606,7 +3609,7 @@ cmd_gpu_info() {
 #   TMATE_SERVER_ED25519_FP      Ed25519 fingerprint (SHA256:...)
 cmd_tmate() {
   if ! command -v tmate >/dev/null 2>&1; then
-    echo "tmate not installed. Install via: haven apt install tmate"
+    echo "tmate not installed. Install via: bulkhead apt install tmate"
     return 1
   fi
 
@@ -3686,7 +3689,7 @@ cmd_tmate() {
           --port)        _cfg_port="${2:-22}"; shift 2 ;;
           --rsa-fp)      _cfg_rsa="${2:-}"; shift 2 ;;
           --ed25519-fp)  _cfg_ed="${2:-}"; shift 2 ;;
-          *) echo "Unknown flag: $1"; echo "Usage: haven tmate configure [--public | --server HOST [--port PORT] [--rsa-fp FP] [--ed25519-fp FP]]"; return 1 ;;
+          *) echo "Unknown flag: $1"; echo "Usage: bulkhead tmate configure [--public | --server HOST [--port PORT] [--rsa-fp FP] [--ed25519-fp FP]]"; return 1 ;;
         esac
       done
 
@@ -3721,7 +3724,7 @@ cmd_tmate() {
 
       # Interactive wizard
       echo ""
-      echo "haven tmate — server configuration"
+      echo "bulkhead tmate — server configuration"
       echo "──────────────────────────────────"
       echo "  [1] Self-hosted tmate server  (recommended — your infrastructure)"
       echo "  [2] Public tmate.io           (third-party relay — less secure)"
@@ -3754,7 +3757,7 @@ cmd_tmate() {
           _tmate_write_conf "${_tm_host}" "${_tm_port}" "${_tm_rsa_fp}" "${_tm_ed25519_fp}"
           echo ""
           echo "Configuration saved: self-hosted server ${_tm_host}:${_tm_port}."
-          echo "Run 'haven tmate start' to begin."
+          echo "Run 'bulkhead tmate start' to begin."
           ;;
         2)
           echo ""
@@ -3771,7 +3774,7 @@ cmd_tmate() {
           _tmate_save_settings
           rm -f "${HOME}/.tmate.conf" 2>/dev/null
           echo "Configuration saved: public tmate.io."
-          echo "Run 'haven tmate start' to begin."
+          echo "Run 'bulkhead tmate start' to begin."
           ;;
         *)
           echo "Aborted."
@@ -3816,7 +3819,7 @@ cmd_tmate() {
       if _tmate_alive; then
         tmate -S "${sock}" attach
       else
-        echo "No active tmate session — run 'haven tmate' to start one."
+        echo "No active tmate session — run 'bulkhead tmate' to start one."
         return 1
       fi
       ;;
@@ -3921,15 +3924,15 @@ cmd_tmate() {
         echo "  Server: tmate.io (public)"
       fi
       echo ""
-      echo "  haven tmate status     — print URLs again"
-      echo "  haven tmate fg         — attach"
-      echo "  haven tmate kill       — tear down"
-      echo "  haven tmate configure  — change server"
+      echo "  bulkhead tmate status     — print URLs again"
+      echo "  bulkhead tmate fg         — attach"
+      echo "  bulkhead tmate kill       — tear down"
+      echo "  bulkhead tmate configure  — change server"
       ;;
 
     # ── fallthrough ────────────────────────────────────────────────────────────
     *)
-      echo "Usage: haven tmate [start|status|fg|kill|configure]"
+      echo "Usage: bulkhead tmate [start|status|fg|kill|configure]"
       return 1
       ;;
   esac
@@ -3948,7 +3951,7 @@ cmd_backup() {
       if ! command -v fzf >/dev/null 2>&1; then
         echo "Launching rclone config — interactive remote setup."
         echo "Common providers: S3, Backblaze B2, Google Drive, Dropbox, SFTP, WebDAV."
-        echo "After setup, use: haven backup push <remote:path>"
+        echo "After setup, use: bulkhead backup push <remote:path>"
         echo ""
         rclone config
         echo ""
@@ -4039,7 +4042,7 @@ FALLBACK
       echo ""
       echo "Configured remotes:"
       rclone listremotes 2>/dev/null || echo "  (none)"
-      echo "Use: haven backup push ${_name}:<path>"
+      echo "Use: bulkhead backup push ${_name}:<path>"
       ;;
     status)
       if [ -n "${remote}" ]; then
@@ -4051,39 +4054,39 @@ FALLBACK
         echo ""
       fi
       echo "Configured rclone remotes:"
-      rclone listremotes 2>/dev/null || echo "  (none — run 'haven backup configure')"
+      rclone listremotes 2>/dev/null || echo "  (none — run 'bulkhead backup configure')"
       echo ""
       echo "Local backup paths:"
       du -sh "${HOME}/.haven" "${HOME}/.config" "${HOME}/.continue" "${HOME}/.inferhaven" 2>/dev/null
       ;;
     push)
-      [ -z "${remote}" ] && { echo "Usage: haven backup push <remote:path>"; return 1; }
+      [ -z "${remote}" ] && { echo "Usage: bulkhead backup push <remote:path>"; return 1; }
       rclone sync --progress \
         --include "/.haven/**" --include "/.config/**" --include "/.continue/**" --include "/.inferhaven" \
         "${HOME}" "${remote}"
       ;;
     pull)
-      [ -z "${remote}" ] && { echo "Usage: haven backup pull <remote:path>"; return 1; }
+      [ -z "${remote}" ] && { echo "Usage: bulkhead backup pull <remote:path>"; return 1; }
       rclone sync --progress "${remote}" "${HOME}"
       ;;
     -h|--help|help)
       cat <<'USAGE'
-Usage: haven backup <subcommand> [remote:path]
+Usage: bulkhead backup <subcommand> [remote:path]
 
-  haven backup configure          Interactive rclone remote setup wizard
-  haven backup status             Show local backup paths + configured remotes
-  haven backup status <remote:>   Also show size + top-level contents of that remote
-  haven backup push <remote:path> Sync ~/.haven, ~/.config, ~/.continue to remote
-  haven backup pull <remote:path> Restore from remote
+  bulkhead backup configure          Interactive rclone remote setup wizard
+  bulkhead backup status             Show local backup paths + configured remotes
+  bulkhead backup status <remote:>   Also show size + top-level contents of that remote
+  bulkhead backup push <remote:path> Sync ~/.haven, ~/.config, ~/.continue to remote
+  bulkhead backup pull <remote:path> Restore from remote
 USAGE
       ;;
-    *) echo "Usage: haven backup {configure|status [remote:]|push|pull} [remote:path]"; return 1 ;;
+    *) echo "Usage: bulkhead backup {configure|status [remote:]|push|pull} [remote:path]"; return 1 ;;
   esac
 }
 
 # ── sync: re-render coding-assistant configs from the live model list ────────
 # Reuses the same _haven_sync / _haven_sync_all driver that runs on first boot
-# and after every haven pull/remove.
+# and after every bulkhead pull/remove.
 cmd_sync() {
   local sub="${1:-all}"
   case "${sub}" in
@@ -4098,16 +4101,16 @@ cmd_sync() {
       ;;
     -h|--help|help)
       cat <<'USAGE'
-Usage: haven sync [<tool>|all|list]
+Usage: bulkhead sync [<tool>|all|list]
 
 Re-render coding-assistant configs from the current Ollama model list. Each
 tool's file is rewritten only if the existing file carries the inferhaven
 sentinel (first-line marker or sidecar) — user-owned files are preserved.
 
-  haven sync             # all tools (parallel)
-  haven sync all         # same as above
-  haven sync opencode    # one tool
-  haven sync list        # show supported tools
+  bulkhead sync             # all tools (parallel)
+  bulkhead sync all         # same as above
+  bulkhead sync opencode    # one tool
+  bulkhead sync list        # show supported tools
 USAGE
       ;;
     *)
@@ -4115,7 +4118,7 @@ USAGE
         *" ${sub} "*) _haven_sync "${sub}" ;;
         *)
           echo "Unknown tool: ${sub}"
-          echo "Run 'haven sync list' for supported tools."
+          echo "Run 'bulkhead sync list' for supported tools."
           return 1
           ;;
       esac
@@ -4125,9 +4128,9 @@ USAGE
 
 # ── Stack lifecycle (host-only) ───────────────────────────────────────────────
 _host_only() {
-  echo -e "${YELLOW}[InferHaven]${NC} '$1' manages the Docker stack itself."
+  echo -e "${YELLOW}[Bulkhead]${NC} '$1' manages the Docker stack itself."
   echo "  Run it from the host (where the repo lives):"
-  echo "    ./scripts/haven $1"
+  echo "    ./scripts/bulkhead $1"
   exit 1
 }
 
@@ -4142,7 +4145,7 @@ cmd_starship() {
     echo -e "  ${YELLOW}Starship is not installed in this workspace.${NC}"
     echo "  (The .env setting INSTALL_STARSHIP controls this at build time.)"
     echo ""
-    printf "  Install Starship now with InferHaven defaults? [y/N] "
+    printf "  Install Starship now with Bulkhead defaults? [y/N] "
     read -r answer
     if [[ "$answer" =~ ^[Yy]$ ]]; then
       curl -sS https://starship.rs/install.sh | sh -s -- --yes
@@ -4167,13 +4170,13 @@ cmd_starship() {
         echo "Default template not found at /etc/inferhaven/starship.toml." >&2
         return 1
       fi
-      printf "This will overwrite %s with InferHaven defaults. Continue? [y/N] " "$config"
+      printf "This will overwrite %s with Bulkhead defaults. Continue? [y/N] " "$config"
       read -r answer
       [[ "$answer" =~ ^[Yy]$ ]] || return 0
       cp /etc/inferhaven/starship.toml "$config"
       mkdir -p "$(dirname "$mode_file")"
       echo "nf" > "$mode_file"
-      echo "Config reset to InferHaven defaults (Nerd Font mode)."
+      echo "Config reset to Bulkhead defaults (Nerd Font mode)."
       echo "Open a new shell (or: exec \$SHELL -l) to apply."
       ;;
 
@@ -4195,12 +4198,12 @@ cmd_starship() {
       echo "  Config:  ${config}"
       echo "  Mode:    ${mode}"
       echo ""
-      echo "  Commands: haven starship [emoji|nf|reset|edit]"
+      echo "  Commands: bulkhead starship [emoji|nf|reset|edit]"
       echo ""
       ;;
 
     *)
-      echo "Usage: haven starship [emoji|nf|reset|edit]" >&2
+      echo "Usage: bulkhead starship [emoji|nf|reset|edit]" >&2
       return 1
       ;;
   esac
@@ -4213,7 +4216,7 @@ _starship_set_mode() {
 
   if [ ! -f "$config" ]; then
     echo "No starship config found at ${config}." >&2
-    echo "Run 'haven starship reset' to create one from the InferHaven default." >&2
+    echo "Run 'bulkhead starship reset' to create one from the Bulkhead default." >&2
     return 1
   fi
 
@@ -4224,7 +4227,7 @@ _starship_set_mode() {
     fi
     if ! grep -q "󰚊 IH" "$config"; then
       echo "Badge pattern not found — config may be fully customized." >&2
-      echo "Edit manually: haven starship edit" >&2
+      echo "Edit manually: bulkhead starship edit" >&2
       return 1
     fi
     sed -i 's/󰚊 IH/🏡 IH/g' "$config"
@@ -4235,7 +4238,7 @@ _starship_set_mode() {
     fi
     if ! grep -q "🏡 IH" "$config"; then
       echo "Badge pattern not found — config may be fully customized." >&2
-      echo "Edit manually: haven starship edit" >&2
+      echo "Edit manually: bulkhead starship edit" >&2
       return 1
     fi
     sed -i 's/🏡 IH/󰚊 IH/g' "$config"
@@ -4287,7 +4290,7 @@ cmd_caddy() {
     status)
       if [ "$CADDY_RUNNING" = "false" ]; then
         echo ""
-        echo -e "  ${RED}Caddy is not running.${NC} Start with: haven up  (from the host)"
+        echo -e "  ${RED}Caddy is not running.${NC} Start with: bulkhead up  (from the host)"
         echo ""
         return 0
       fi
@@ -4302,7 +4305,7 @@ cmd_caddy() {
         internal)
           echo "    Certificate: Caddy self-signed CA (not trusted by default)"
           echo ""
-          echo -e "  ${YELLOW}Run 'haven caddy cert' to export the CA and get install instructions.${NC}"
+          echo -e "  ${YELLOW}Run 'bulkhead caddy cert' to export the CA and get install instructions.${NC}"
           ;;
         acme)
           echo "    Certificate: Let's Encrypt (publicly trusted)"
@@ -4323,8 +4326,8 @@ cmd_caddy() {
       local _caddy_run
       _caddy_run="$(_haven_container caddy)"
       if [ -z "$_caddy_run" ]; then
-        echo -e "${RED}[InferHaven]${NC} Caddy container is not running."
-        echo "  Start it with: haven up  (from the host)"
+        echo -e "${RED}[Bulkhead]${NC} Caddy container is not running."
+        echo "  Start it with: bulkhead up  (from the host)"
         return 1
       fi
 
@@ -4373,7 +4376,7 @@ cmd_caddy() {
       ;;
 
     *)
-      echo "  Usage: haven caddy [status|cert]"
+      echo "  Usage: bulkhead caddy [status|cert]"
       echo "    status   Show Caddy TLS mode and domain"
       echo "    cert     Export the Caddy root CA and print trust instructions"
       ;;
@@ -4419,12 +4422,12 @@ cmd_devcontainer() {
   shift || true
 
   if ! command -v devcontainer >/dev/null 2>&1; then
-    echo -e "${RED}[InferHaven]${NC} devcontainer CLI not found in this image."
+    echo -e "${RED}[Bulkhead]${NC} devcontainer CLI not found in this image."
     echo "  Rebuild the workspace image to pick up @devcontainers/cli."
     exit 1
   fi
   if ! [ -S /var/run/docker.sock ]; then
-    echo -e "${RED}[InferHaven]${NC} /var/run/docker.sock not mounted — nested devcontainers"
+    echo -e "${RED}[Bulkhead]${NC} /var/run/docker.sock not mounted — nested devcontainers"
     echo "  need shared access to the host docker daemon."
     exit 1
   fi
@@ -4451,7 +4454,7 @@ cmd_devcontainer() {
       local host
       host="$(_devcontainer_host_path "$target")"
       if [ -z "$host" ]; then
-        echo -e "${RED}[InferHaven]${NC} Cannot resolve '${target}' to a host path."
+        echo -e "${RED}[Bulkhead]${NC} Cannot resolve '${target}' to a host path."
         echo "  The path is not under any volume / bind mount visible to this container."
         echo "  Clone the dev repo under /home/haven/projects (which is volume-mounted)"
         echo "  or any other host-backed location, then retry."
@@ -4472,15 +4475,15 @@ cmd_devcontainer() {
       fi
       if [ -n "$cfg_path" ]; then
         if [ ! -f "$cfg_path" ]; then
-          echo -e "${RED}[InferHaven]${NC} config not found: ${cfg_path}"
+          echo -e "${RED}[Bulkhead]${NC} config not found: ${cfg_path}"
           exit 1
         fi
         cli_config_args="--config $cfg_path"
       fi
 
-      echo -e "${CYAN}[haven devcontainer]${NC} inner path : ${target}"
-      echo -e "${CYAN}[haven devcontainer]${NC} host  path : ${host}"
-      [ -n "$cfg_path" ] && echo -e "${CYAN}[haven devcontainer]${NC} config     : ${cfg_path}"
+      echo -e "${CYAN}[bulkhead devcontainer]${NC} inner path : ${target}"
+      echo -e "${CYAN}[bulkhead devcontainer]${NC} host  path : ${host}"
+      [ -n "$cfg_path" ] && echo -e "${CYAN}[bulkhead devcontainer]${NC} config     : ${cfg_path}"
       echo ""
 
       # Use the cli's own JSONC parser via read-configuration to get the
@@ -4490,7 +4493,7 @@ cmd_devcontainer() {
       cfg_json="$(devcontainer read-configuration --workspace-folder "$target" $cli_config_args 2>/dev/null \
                     | jq -c '.mergedConfiguration // .configuration')"
       if [ -z "$cfg_json" ] || [ "$cfg_json" = "null" ]; then
-        echo -e "${RED}[InferHaven]${NC} Could not read a devcontainer config under ${target}."
+        echo -e "${RED}[Bulkhead]${NC} Could not read a devcontainer config under ${target}."
         echo "  Looked for .devcontainer/devcontainer.json and .devcontainer.json."
         echo "  Use --flavor <subdir> or --config <path> to point at a non-default config."
         exit 1
@@ -4501,8 +4504,8 @@ cmd_devcontainer() {
       # inner paths to the host daemon, which can't see them. Rewriting the
       # compose file is out of scope for this helper.
       if echo "$cfg_json" | jq -e 'has("dockerComposeFile")' >/dev/null 2>&1; then
-        echo -e "${RED}[InferHaven]${NC} Nested compose-based devcontainers aren't supported by"
-        echo "  'haven devcontainer up'."
+        echo -e "${RED}[Bulkhead]${NC} Nested compose-based devcontainers aren't supported by"
+        echo "  'bulkhead devcontainer up'."
         echo ""
         echo "  Reason: docker-compose resolves relative paths in volumes: against"
         echo "  the compose-file location, then passes them to the host daemon."
@@ -4512,8 +4515,8 @@ cmd_devcontainer() {
         echo "  Workarounds for the inferhaven-inside-inferhaven case:"
         echo "    1. docker compose -f ${host}/docker-compose.codespaces.yml \\"
         echo "                      -p inferhaven-dev up -d"
-        echo "    2. Develop InferHaven from your host, not from inside a"
-        echo "       running InferHaven workspace."
+        echo "    2. Develop Bulkhead from your host, not from inside a"
+        echo "       running Bulkhead workspace."
         exit 1
       fi
 
@@ -4562,11 +4565,11 @@ cmd_devcontainer() {
       ids="$(docker ps -a --filter "label=devcontainer.local_folder=$target" \
                           --format '{{.ID}}' 2>/dev/null)"
       if [ -z "$ids" ]; then
-        echo -e "${YELLOW}[haven devcontainer]${NC} no containers labelled with"
+        echo -e "${YELLOW}[bulkhead devcontainer]${NC} no containers labelled with"
         echo "  devcontainer.local_folder=${target}"
         return 0
       fi
-      echo -e "${CYAN}[haven devcontainer]${NC} removing $(echo "$ids" | wc -l) container(s):"
+      echo -e "${CYAN}[bulkhead devcontainer]${NC} removing $(echo "$ids" | wc -l) container(s):"
       # Route through the docker() sudo wrapper — xargs would invoke the external
       # docker binary directly and bypass it (SC2033). $ids is newline-separated,
       # already confirmed non-empty above; intentional word-split into args.
@@ -4574,15 +4577,15 @@ cmd_devcontainer() {
       docker rm -f $ids
       ;;
     build)
-      echo -e "${YELLOW}[haven devcontainer]${NC} 'build' is not nested-safe — the cli passes"
+      echo -e "${YELLOW}[bulkhead devcontainer]${NC} 'build' is not nested-safe — the cli passes"
       echo "  the workspace-folder as the docker build context, which only the host"
-      echo "  daemon can resolve. Use 'haven devcontainer up' (it builds + starts in"
+      echo "  daemon can resolve. Use 'bulkhead devcontainer up' (it builds + starts in"
       echo "  one step) or run 'docker buildx build' from your host instead."
       exit 1
       ;;
     help|--help|-h|"")
       echo ""
-      echo -e "  ${CYAN}haven devcontainer${NC} — nested devcontainer helper"
+      echo -e "  ${CYAN}bulkhead devcontainer${NC} — nested devcontainer helper"
       echo ""
       echo "  Run a devcontainer project inside this workspace, talking to the"
       echo "  host docker daemon via /var/run/docker.sock. The helper reads the"
@@ -4593,10 +4596,10 @@ cmd_devcontainer() {
       echo -e "  ${BOLD}[path]${NC} is the CLONE DIRECTORY (default: \$PWD), NOT a container name."
       echo ""
       echo "  Usage:"
-      echo "    haven devcontainer up    [path] [--flavor <sub>|--config <p>]"
-      echo "    haven devcontainer down  [path]"
-      echo "    haven devcontainer exec  [path] -- <cmd>"
-      echo "    haven devcontainer read-configuration [path]"
+      echo "    bulkhead devcontainer up    [path] [--flavor <sub>|--config <p>]"
+      echo "    bulkhead devcontainer down  [path]"
+      echo "    bulkhead devcontainer exec  [path] -- <cmd>"
+      echo "    bulkhead devcontainer read-configuration [path]"
       echo ""
       echo "  Flavor / config selection:"
       echo "    --flavor <subdir>      Use [path]/.devcontainer/<subdir>/devcontainer.json"
@@ -4606,17 +4609,17 @@ cmd_devcontainer() {
       echo "                           or .devcontainer.json at the repo root."
       echo ""
       echo "  Examples:"
-      echo "    haven devcontainer up .                                         # cwd is the clone"
-      echo "    haven devcontainer up ~/projects/try-node"
-      echo "    haven devcontainer up ~/projects/my-repo --flavor python        # .devcontainer/python/"
-      echo "    haven devcontainer up . --config .devcontainer/alt/devcontainer.json"
+      echo "    bulkhead devcontainer up .                                         # cwd is the clone"
+      echo "    bulkhead devcontainer up ~/projects/try-node"
+      echo "    bulkhead devcontainer up ~/projects/my-repo --flavor python        # .devcontainer/python/"
+      echo "    bulkhead devcontainer up . --config .devcontainer/alt/devcontainer.json"
       echo ""
       echo "  Supported:"
       echo "    - Build-based devcontainers (image: / build: in devcontainer.json)"
       echo "      such as the official Microsoft examples, claude-code, etc."
       echo ""
-      echo "  Not supported (use 'haven nest up' instead):"
-      echo "    - Compose-based devcontainers (dockerComposeFile: …). 'haven nest'"
+      echo "  Not supported (use 'bulkhead nest up' instead):"
+      echo "    - Compose-based devcontainers (dockerComposeFile: …). 'bulkhead nest'"
       echo "      generates a translated compose override that the upstream cli"
       echo "      can't produce on its own."
       echo ""
@@ -4627,17 +4630,17 @@ cmd_devcontainer() {
       ;;
     *)
       echo "  Unknown subcommand: $sub"
-      echo "  Run 'haven devcontainer help' for usage."
+      echo "  Run 'bulkhead devcontainer help' for usage."
       exit 1
       ;;
   esac
 }
 
-# ── Nested InferHaven compose helper (inferhaven-in-inferhaven) ──────────────
-# `haven devcontainer up` refuses compose-based projects because docker-compose
+# ── Nested Bulkhead compose helper (inferhaven-in-inferhaven) ──────────────
+# `bulkhead devcontainer up` refuses compose-based projects because docker-compose
 # resolves relative volumes against the compose-file dir on the inner FS and
 # sends those (inner) paths to the outer docker daemon, which can't see them.
-# `haven nest` works around that for inferhaven specifically: translate inner
+# `bulkhead nest` works around that for inferhaven specifically: translate inner
 # clone path to outer-host path via /proc/self/mountinfo, then layer a small
 # compose override that replaces the workspace service's `.` binds with the
 # absolute host equivalents.
@@ -4666,17 +4669,17 @@ _nest_require_project_running() {
                --format '{{.Names}}' 2>/dev/null | grep -q .; then
     return 0
   fi
-  echo -e "${RED}[haven nest]${NC} no running nest stack found for project '${proj}'."
+  echo -e "${RED}[bulkhead nest]${NC} no running nest stack found for project '${proj}'."
   echo "  target resolved to: ${target}"
   case "$(basename "$target")" in
     haven-nest-*|*-workspace-*|*-ollama-*|*-caddy-*|*-code-server-*)
       echo -e "  ${YELLOW}hint:${NC} the first positional is the CLONE DIRECTORY, not a"
       echo "        container name. Try:"
-      echo "          haven nest exec .                      (if cwd is the clone)"
-      echo "          haven nest exec ~/projects/inferhaven-dev"
+      echo "          bulkhead nest exec .                      (if cwd is the clone)"
+      echo "          bulkhead nest exec ~/projects/inferhaven-dev"
       ;;
     *)
-      echo "  Run 'haven nest status all' to see what's actually running."
+      echo "  Run 'bulkhead nest status all' to see what's actually running."
       ;;
   esac
   exit 1
@@ -4698,21 +4701,21 @@ cmd_nest() {
       fi
       target="$(realpath "$target" 2>/dev/null || echo "$target")"
       if [ ! -d "$target" ]; then
-        echo -e "${RED}[haven nest]${NC} path does not exist: ${target}"
+        echo -e "${RED}[bulkhead nest]${NC} path does not exist: ${target}"
         exit 1
       fi
 
       local host
       host="$(_devcontainer_host_path "$target")"
       if [ -z "$host" ]; then
-        echo -e "${RED}[haven nest]${NC} cannot resolve '${target}' to a host path."
+        echo -e "${RED}[bulkhead nest]${NC} cannot resolve '${target}' to a host path."
         echo "  Clone under /home/haven/projects (a known volume) and retry."
         exit 1
       fi
 
       local cfg
       if ! cfg="$(_nest_locate_config "$target" "$flavor_sub")"; then
-        echo -e "${RED}[haven nest]${NC} no devcontainer.json under ${target}/.devcontainer${flavor_sub:+/$flavor_sub}/"
+        echo -e "${RED}[bulkhead nest]${NC} no devcontainer.json under ${target}/.devcontainer${flavor_sub:+/$flavor_sub}/"
         exit 1
       fi
 
@@ -4726,7 +4729,7 @@ cmd_nest() {
                     --config "$cfg" 2>/dev/null \
                     | jq -c '.configuration')"
       if [ -z "$cfg_json" ] || [ "$cfg_json" = "null" ]; then
-        echo -e "${RED}[haven nest]${NC} failed to parse ${cfg}"
+        echo -e "${RED}[bulkhead nest]${NC} failed to parse ${cfg}"
         exit 1
       fi
 
@@ -4739,8 +4742,8 @@ cmd_nest() {
       workspace_folder="$(echo "$cfg_json" | jq -r '.workspaceFolder // "/home/haven/projects/inferhaven-core"')"
 
       if [ -z "$compose_files_raw" ]; then
-        echo -e "${RED}[haven nest]${NC} ${cfg} has no dockerComposeFile."
-        echo "  For build-based projects use 'haven devcontainer up'."
+        echo -e "${RED}[bulkhead nest]${NC} ${cfg} has no dockerComposeFile."
+        echo "  For build-based projects use 'bulkhead devcontainer up'."
         exit 1
       fi
 
@@ -4798,7 +4801,7 @@ cmd_nest() {
       trap "rm -f '$tmp'" EXIT
       cat > "$tmp" <<EOF
 ###############################################################################
-# haven nest auto-generated override
+# bulkhead nest auto-generated override
 #   target service:    ${svc}
 #   inner clone:       ${target}
 #   host path:         ${host}
@@ -4853,10 +4856,10 @@ volumes:
 EOF
       fi
 
-      echo -e "${CYAN}[haven nest]${NC} inner:   ${target}"
-      echo -e "${CYAN}[haven nest]${NC} host:    ${host}"
-      echo -e "${CYAN}[haven nest]${NC} project: ${proj}"
-      echo -e "${CYAN}[haven nest]${NC} compose:"
+      echo -e "${CYAN}[bulkhead nest]${NC} inner:   ${target}"
+      echo -e "${CYAN}[bulkhead nest]${NC} host:    ${host}"
+      echo -e "${CYAN}[bulkhead nest]${NC} project: ${proj}"
+      echo -e "${CYAN}[bulkhead nest]${NC} compose:"
       # Intentional word-split: $compose_args is a space-joined token list
       # (-f <file> …); same pattern as the `docker compose $compose_args` call below.
       # shellcheck disable=SC2086
@@ -4881,7 +4884,7 @@ EOF
       local target="${1:-$PWD}"
       shift || true
       target="$(realpath "$target" 2>/dev/null || echo "$target")"
-      # Allow `haven nest exec <path> -- <cmd …>` syntax; docker compose exec
+      # Allow `bulkhead nest exec <path> -- <cmd …>` syntax; docker compose exec
       # doesn't want a literal `--` in argv.
       [ "${1:-}" = "--" ] && shift
       local proj
@@ -4953,12 +4956,12 @@ EOF
 
     help|--help|-h|"")
       echo ""
-      echo -e "  ${CYAN}haven nest${NC} — nested InferHaven compose helper"
+      echo -e "  ${CYAN}bulkhead nest${NC} — nested Bulkhead compose helper"
       echo ""
-      echo "  Spin up a second InferHaven stack from a cloned repo inside the"
-      echo "  running outer workspace. 'haven devcontainer up' refuses compose-"
+      echo "  Spin up a second Bulkhead stack from a cloned repo inside the"
+      echo "  running outer workspace. 'bulkhead devcontainer up' refuses compose-"
       echo "  based projects because docker-compose passes inner paths to the"
-      echo "  outer daemon. 'haven nest' generates a compose override that"
+      echo "  outer daemon. 'bulkhead nest' generates a compose override that"
       echo "  rewrites workspace binds to translated host paths."
       echo ""
       echo -e "  ${BOLD}<path>${NC} is always the CLONE DIRECTORY (e.g. '.', '~/projects/foo'),"
@@ -4966,34 +4969,34 @@ EOF
       echo "  haven-nest-<basename>."
       echo ""
       echo "  Usage:"
-      echo "    haven nest up    <path> [--flavor <subdir>]   Build/start stack"
-      echo "    haven nest down  <path>                       Tear down + remove"
-      echo "    haven nest exec  <path> -- <cmd>              Exec inside workspace (-u haven)"
-      echo "    haven nest logs  <path> [svc]                 Tail logs"
-      echo "    haven nest status [<path>|all]                Show nested stacks"
+      echo "    bulkhead nest up    <path> [--flavor <subdir>]   Build/start stack"
+      echo "    bulkhead nest down  <path>                       Tear down + remove"
+      echo "    bulkhead nest exec  <path> -- <cmd>              Exec inside workspace (-u haven)"
+      echo "    bulkhead nest logs  <path> [svc]                 Tail logs"
+      echo "    bulkhead nest status [<path>|all]                Show nested stacks"
       echo ""
       echo "  Flavor / config selection:"
-      echo "    haven nest up <path>                          .devcontainer/devcontainer.json"
-      echo "    haven nest up <path> --flavor full-stack      .devcontainer/full-stack/devcontainer.json"
-      echo "    haven nest up <path> --flavor <sub>           .devcontainer/<sub>/devcontainer.json"
+      echo "    bulkhead nest up <path>                          .devcontainer/devcontainer.json"
+      echo "    bulkhead nest up <path> --flavor full-stack      .devcontainer/full-stack/devcontainer.json"
+      echo "    bulkhead nest up <path> --flavor <sub>           .devcontainer/<sub>/devcontainer.json"
       echo ""
       echo "  Examples:"
-      echo "    cd ~/projects/inferhaven-dev && haven nest up ."
-      echo "    haven nest up ~/projects/inferhaven-dev --flavor full-stack"
-      echo "    haven nest exec ~/projects/inferhaven-dev -- bash -c 'cd /home/haven/projects/inferhaven-core && haven doctor'"
-      echo "    haven nest logs ~/projects/inferhaven-dev workspace"
-      echo "    haven nest status all"
-      echo "    haven nest down ~/projects/inferhaven-dev"
+      echo "    cd ~/projects/inferhaven-dev && bulkhead nest up ."
+      echo "    bulkhead nest up ~/projects/inferhaven-dev --flavor full-stack"
+      echo "    bulkhead nest exec ~/projects/inferhaven-dev -- bash -c 'cd /home/haven/projects/inferhaven-core && bulkhead doctor'"
+      echo "    bulkhead nest logs ~/projects/inferhaven-dev workspace"
+      echo "    bulkhead nest status all"
+      echo "    bulkhead nest down ~/projects/inferhaven-dev"
       echo ""
       echo "  Notes:"
       echo "    - Reuses the outer workspace image if visible (skips rebuild)."
-      echo "    - Build-based projects (no dockerComposeFile) use 'haven devcontainer up'."
+      echo "    - Build-based projects (no dockerComposeFile) use 'bulkhead devcontainer up'."
       echo ""
       ;;
 
     *)
       echo "  Unknown subcommand: $sub"
-      echo "  Run 'haven nest help' for usage."
+      echo "  Run 'bulkhead nest help' for usage."
       exit 1
       ;;
   esac
@@ -5061,7 +5064,7 @@ case "${1:-help}" in
 
   # Nested devcontainer helper (dev-inside-prod, build-based projects)
   devcontainer)   shift; cmd_devcontainer "$@" ;;
-  # Nested InferHaven compose helper (compose-based, inferhaven-in-inferhaven)
+  # Nested Bulkhead compose helper (compose-based, inferhaven-in-inferhaven)
   nest)           shift; cmd_nest "$@" ;;
 
   # Tool-config sync (re-render coding-assistant configs)
@@ -5069,7 +5072,7 @@ case "${1:-help}" in
 
   # Diagnostics
   doctor)         cmd_doctor ;;
-  version)        echo "InferHaven v${VERSION}" ;;
+  version)        echo "Bulkhead v${VERSION}" ;;
   help)           cmd_help ;;
 
   # Stack lifecycle — host only

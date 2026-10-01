@@ -2,7 +2,7 @@
 # shellcheck disable=SC2015,SC2016
 # SC2015: `curl && mv || true` is the deliberate non-fatal cache-fill idiom.
 # SC2016: xargs bash -c '...' body keeps $vars literal for the spawned shell.
-# InferHaven model-cache helpers.
+# Bulkhead model-cache helpers.
 # Eliminates the N+1 curl pattern across 7 sync functions + status scripts.
 #
 # /run is tmpfs in the container — cache resets every container restart, so
@@ -51,7 +51,7 @@ _haven_models_list() {
 # Returns the context window a harness may safely advertise for a model — i.e.
 # what Ollama will actually SERVE, never more (over-advertising overflows the
 # server and triggers "context exceeds window"). Cached per model.
-# Priority: 1) explicit num_ctx in /api/show .parameters (haven tune/params) —
+# Priority: 1) explicit num_ctx in /api/show .parameters (bulkhead tune/params) —
 #              served verbatim via the Modelfile, already capped at model max.
 #           2) UNTUNED model → min(native <arch>.context_length, server floor).
 #              The server serves untuned models at OLLAMA_CONTEXT_LENGTH, not
@@ -77,7 +77,7 @@ _haven_model_ctx() {
     ctx=$(jq -r '.parameters // ""' "${cache}" 2>/dev/null \
             | grep -i '^num_ctx ' | awk '{print $2}' | head -1)
     if [ -n "${ctx}" ]; then
-        # Explicit num_ctx (haven tune/params): Ollama serves exactly this via
+        # Explicit num_ctx (bulkhead tune/params): Ollama serves exactly this via
         # the Modelfile and tune already capped it at the model max — use as-is.
         echo "${ctx}"
         return 0

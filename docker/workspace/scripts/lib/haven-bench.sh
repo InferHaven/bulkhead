@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# InferHaven — bench metric math.
+# Bulkhead — bench metric math.
 #
 # Pure + sourceable: reads one Ollama /api/generate JSON object on stdin and
 # emits computed tokens/sec metrics as compact JSON. No network, no globals —

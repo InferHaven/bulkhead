@@ -1,4 +1,4 @@
-# InferHaven Devcontainer Flavors
+# Bulkhead Devcontainer Flavors
 
 This repo ships two devcontainer configurations. They build the same workspace image but boot different surrounding stacks. Every conformant devcontainer client (GitHub Codespaces, VS Code Dev Containers, DevPod, JetBrains Gateway, `@devcontainers/cli`) will present a flavor picker when more than one `devcontainer.json` is present.
 
@@ -60,7 +60,7 @@ devpod up --ide codium \
 
 ## Nerd Fonts (icons in the prompt + lsd)
 
-InferHaven's prompt and `lsd` output use Nerd Font glyphs. Fonts are a **client-side** concern — the devcontainer does not (and should not) override your editor's font. Install a Nerd Font on your host and point your editor's terminal font at it:
+Bulkhead's prompt and `lsd` output use Nerd Font glyphs. Fonts are a **client-side** concern, and the devcontainer does not (and should not) override your editor's font. Install a Nerd Font on your host and point your editor's terminal font at it:
 
 1. Download a [Nerd Font](https://www.nerdfonts.com/font-downloads) (JetBrains Mono NF and FiraCode NF are common picks) and install it system-wide.
 2. In VSCodium / VS Code → Settings → search `terminal.integrated.fontFamily` → set it to e.g. `'JetBrainsMono Nerd Font'`. Set at the **User** level so it applies inside devcontainers too.
@@ -75,7 +75,7 @@ NVIDIA hosts need the NVIDIA Container Toolkit installed first. See [GPU Setup](
 
 ## Nested devcontainers (dev inside prod)
 
-If you're SSH'd into a running InferHaven workspace and want to run a devcontainer project inside it, use the `haven devcontainer` helper. The helper reads the inner config (so it parses correctly) and injects an explicit `workspaceMount` pointing at the matching host path — the only path the host docker daemon can actually resolve via `/proc/self/mountinfo`.
+If you're SSH'd into a running Bulkhead workspace and want to run a devcontainer project inside it, use the `bulkhead devcontainer` helper. The helper reads the inner config (so it parses correctly) and injects an explicit `workspaceMount` pointing at the matching host path, the only path the host docker daemon can actually resolve via `/proc/self/mountinfo`.
 
 ### Supported: build-based devcontainers
 
@@ -84,27 +84,27 @@ Projects whose `devcontainer.json` uses `image:` or `build:` (no `dockerComposeF
 ```bash
 # Inside the outer workspace
 git clone https://github.com/anthropics/claude-code ~/projects/claude-code
-haven devcontainer up   ~/projects/claude-code
-haven devcontainer exec ~/projects/claude-code -- ls
-haven devcontainer down ~/projects/claude-code
+bulkhead devcontainer up   ~/projects/claude-code
+bulkhead devcontainer exec ~/projects/claude-code -- ls
+bulkhead devcontainer down ~/projects/claude-code
 ```
 
-### Compose-based nested via `haven nest`
+### Compose-based nested via `bulkhead nest`
 
-`haven devcontainer up` only handles build-based devcontainers (single `image:` / `build:` entries). For **compose-based** projects — including InferHaven nested inside InferHaven — use `haven nest`. It auto-translates the workspace bind paths and reuses the outer workspace image:
+`bulkhead devcontainer up` only handles build-based devcontainers (single `image:` / `build:` entries). For **compose-based** projects (including Bulkhead nested inside Bulkhead), use `bulkhead nest`. It auto-translates the workspace bind paths and reuses the outer workspace image:
 
 ```bash
 # Inside the outer workspace
 git clone https://github.com/InferHaven/inferhaven-core ~/projects/inferhaven-dev
-haven nest up   ~/projects/inferhaven-dev                        # codespaces flavor (default)
-haven nest up   ~/projects/inferhaven-dev --flavor full-stack    # full-stack flavor
-haven nest exec ~/projects/inferhaven-dev -- ls /home/haven/projects/inferhaven-core
-haven nest logs ~/projects/inferhaven-dev workspace
-haven nest down ~/projects/inferhaven-dev
-haven nest status all
+bulkhead nest up   ~/projects/inferhaven-dev                        # codespaces flavor (default)
+bulkhead nest up   ~/projects/inferhaven-dev --flavor full-stack    # full-stack flavor
+bulkhead nest exec ~/projects/inferhaven-dev -- ls /home/haven/projects/inferhaven-core
+bulkhead nest logs ~/projects/inferhaven-dev workspace
+bulkhead nest down ~/projects/inferhaven-dev
+bulkhead nest status all
 ```
 
-Each nested stack runs under compose project `haven-nest-<basename>`, fully isolated by name from the outer stack. `haven nest help` lists every subcommand.
+Each nested stack runs under compose project `haven-nest-<basename>`, fully isolated by name from the outer stack. `bulkhead nest help` lists every subcommand.
 
 What it does under the hood:
 
@@ -115,13 +115,13 @@ What it does under the hood:
    - Replaces the `.` binds in the workspace service with the absolute host path via `volumes: !override`.
 4. Runs `docker compose -f <repo-compose-files> -f <override> -p haven-nest-<basename> up -d`.
 
-`haven nest` is inferhaven-aware: it expects the cloned project to have an InferHaven-shaped compose layout (workspace service with `.` binds at `/home/haven/projects/inferhaven-core` and `/opt/inferhaven`). For arbitrary compose-based devcontainers, `haven devcontainer up` will still refuse — translate manually via the printed inner→host path mapping.
+`bulkhead nest` is inferhaven-aware: it expects the cloned project to have a Bulkhead-shaped compose layout (workspace service with `.` binds at `/home/haven/projects/inferhaven-core` and `/opt/inferhaven`). For arbitrary compose-based devcontainers, `bulkhead devcontainer up` will still refuse. Translate manually via the printed inner→host path mapping.
 
-> **Outer-image freshness gotcha.** `haven nest up` reuses the *outer* workspace image for the inner stack (skips a rebuild — see `_haven_resolve_self_container_id` in the helper). If the outer was brought up before the changes you want to test (e.g. you've SSH'd into a long-lived devpod workspace and the workspace image predates a haven.sh / Dockerfile / install-assistants change), the inner stack inherits the stale tooling too. Symptoms: nested smoke fails on `pwd` / `opencode missing` even though the local repo has the fixes. Rebuild the outer first: `devpod up . --recreate` (DevPod), `devcontainer up --workspace-folder . --recreate` (CLI), or `docker compose build workspace && docker compose up -d workspace` (plain compose).
+> **Outer-image freshness gotcha.** `bulkhead nest up` reuses the *outer* workspace image for the inner stack (skips a rebuild — see `_haven_resolve_self_container_id` in the helper). If the outer was brought up before the changes you want to test (e.g. you've SSH'd into a long-lived devpod workspace and the workspace image predates a haven.sh / Dockerfile / install-assistants change), the inner stack inherits the stale tooling too. Symptoms: nested smoke fails on `pwd` / `opencode missing` even though the local repo has the fixes. Rebuild the outer first: `devpod up . --recreate` (DevPod), `devcontainer up --workspace-folder . --recreate` (CLI), or `docker compose build workspace && docker compose up -d workspace` (plain compose).
 
 ### DevPod-in-DevPod (full-stack inside full-stack)
 
-If you SSH into a DevPod-up'd InferHaven workspace and run another `devpod up` inside it for the same full-stack flavor, you'll hit a few rough edges. None are fatal but they should be expected:
+If you SSH into a DevPod-up'd Bulkhead workspace and run another `devpod up` inside it for the same full-stack flavor, you'll hit a few rough edges. None are fatal but they should be expected:
 
 1. **`docker-credential-devpod: executable file not found in $PATH`.** Outer DevPod injected a `credHelpers` entry into `~/.docker/config.json` pointing at a wrapper that lives in the outer host's `~/.devpod/` tree — invisible from inside the workspace container. Every docker build inside the workspace (including BuildKit's syntax-image resolution) blows up on the very first image lookup. The workspace image now ships a no-op `/usr/local/bin/docker-credential-devpod` stub (Round 5 follow-up) that returns empty credentials, falling back to anonymous auth for public images. **If you're on a pre-stub workspace image, rebuild it: `docker compose build workspace` on the outer host.**
 
@@ -138,7 +138,7 @@ If you SSH into a DevPod-up'd InferHaven workspace and run another `devpod up` i
 
 4. **DevPod overrides the compose project name.** `docker compose -p inferhaven-dev …` returns empty. The `container_name:` directives still produce literal `inferhaven-dev-*` names, so `docker logs inferhaven-dev-caddy` works directly. Find the actual project label with `docker inspect inferhaven-dev-workspace --format '{{index .Config.Labels "com.docker.compose.project"}}'`.
 
-For everyday nested dev, `haven nest up <clone>` is usually a cleaner path than `devpod up` — it avoids the DevPod auth-agent / port-forward / credHelpers friction entirely and reuses the outer's built images. Use the DevPod-in-DevPod path only when you specifically need DevPod's own IDE forwarding inside the inner.
+For everyday nested dev, `bulkhead nest up <clone>` is usually a cleaner path than `devpod up` — it avoids the DevPod auth-agent / port-forward / credHelpers friction entirely and reuses the outer's built images. Use the DevPod-in-DevPod path only when you specifically need DevPod's own IDE forwarding inside the inner.
 
 ### BuildKit + custom Caddy image prerequisites
 
@@ -173,7 +173,7 @@ Tuning: `MODEL_WAIT=<seconds>` — seconds to wait for the model in `/api/tags` 
 
 ## Troubleshooting
 
-- **`haven doctor` says "Compose file: ⚠ no compose labels".** The haven CLI couldn't read a `com.docker.compose.project` label off its own container. Confirm the container was started by `docker compose` (not bare `docker run`).
+- **`bulkhead doctor` says "Compose file: ⚠ no compose labels".** The haven CLI couldn't read a `com.docker.compose.project` label off its own container. Confirm the container was started by `docker compose` (not bare `docker run`).
 
 ### Port forwarding by IDE
 

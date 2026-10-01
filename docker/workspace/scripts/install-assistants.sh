@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###############################################################################
-# InferHaven Workspace — Coding Assistant Installer
+# Bulkhead Workspace — Coding Assistant Installer
 #
 # Runs in the background at container start (spawned from entrypoint.sh).
 # Installs coding assistant harnesses listed in INSTALL_ASSISTANTS.
@@ -157,7 +157,7 @@ AVANTE_CMD
 }
 
 # ── Install loop ──────────────────────────────────────────────────────────────
-# Write a lockfile listing each binary being installed so `haven harness` can
+# Write a lockfile listing each binary being installed so `bulkhead harness` can
 # show "installing..." instead of "not installed" during the background install.
 # The lockfile is removed automatically when this script exits (trap below).
 IN_PROGRESS="${HAVEN_DIR}/install-in-progress"
@@ -275,7 +275,7 @@ for raw_tool in "${TOOLS[@]}"; do
         goose)
             # Force-claim ownership of the goose config on first install: if a
             # stale config exists without our sentinel (e.g. left over from a
-            # pre-haven goose install or an older haven version), remove it so
+            # pre-haven goose install or an older bulkhead version), remove it so
             # _haven_sync can write a fresh sentinel-tagged file.
             _goose_cfg="${HOME}/.config/goose/config.yaml"
             if [ -f "${_goose_cfg}" ] \
@@ -323,7 +323,7 @@ for raw_tool in "${TOOLS[@]}"; do
             ;;
 
         continue|continue-code|continuecode|continue-extension)
-            # InferHaven installs the `cn` CLI in the workspace and maintains
+            # Bulkhead installs the `cn` CLI in the workspace and maintains
             # ~/.continue/config.yaml for it. The code-server browser editor is
             # NOT touched — users who want the Continue extension install it
             # themselves via code-server's Extensions panel. See docs/ide/continue.md.

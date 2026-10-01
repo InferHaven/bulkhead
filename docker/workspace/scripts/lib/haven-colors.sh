@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034  # variables are sourced by other scripts
-# InferHaven shared color palette.
+# Bulkhead shared color palette.
 # ANSI sequences for terminal output + tmux #[fg=...] tags for status bar.
 # Source from any script that writes formatted output.
 
