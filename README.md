@@ -15,16 +15,16 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/codespaces/new?hide_repo_select=true&repo=InferHaven/inferhaven-core">
+  <a href="https://github.com/codespaces/new?hide_repo_select=true&repo=InferHaven/bulkhead">
     <img src="https://github.com/codespaces/badge.svg" alt="Open in GitHub Codespaces" />
   </a>
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-FSL--1.1--Apache--2.0-blue.svg" alt="License: FSL-1.1-Apache-2.0" /></a>
-  <a href="https://github.com/InferHaven/inferhaven-core/actions/workflows/devcontainer.yml"><img src="https://github.com/InferHaven/inferhaven-core/actions/workflows/devcontainer.yml/badge.svg" alt="Devcontainer smoke tests" /></a>
+  <a href="https://github.com/InferHaven/bulkhead/actions/workflows/devcontainer.yml"><img src="https://github.com/InferHaven/bulkhead/actions/workflows/devcontainer.yml/badge.svg" alt="Devcontainer smoke tests" /></a>
   <a href="https://discord.gg/X5htGNnEh5"><img src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white" alt="Join the InferHaven Discord" /></a>
-  <a href="https://github.com/InferHaven/inferhaven-core/stargazers"><img src="https://img.shields.io/github/stars/InferHaven/inferhaven-core?style=social" alt="GitHub stars" /></a>
+  <a href="https://github.com/InferHaven/bulkhead/stargazers"><img src="https://img.shields.io/github/stars/InferHaven/bulkhead?style=social" alt="GitHub stars" /></a>
 </p>
 
 <p align="center">
@@ -67,15 +67,15 @@ Bulkhead is those same parts, assembled and kept in tune. `docker compose up -d`
 
 ## Quick Start
 
-> **Just want to try it first?** No install needed: click **[Open in GitHub Codespaces](https://github.com/codespaces/new?hide_repo_select=true&repo=InferHaven/inferhaven-core)** (badge above). It boots the CPU-only flavor with a small model (`qwen3:4b`) and `opencode` + `aider` preinstalled. For real use (GPU, web IDE, your own models), self-host below.
+> **Just want to try it first?** No install needed: click **[Open in GitHub Codespaces](https://github.com/codespaces/new?hide_repo_select=true&repo=InferHaven/bulkhead)** (badge above). It boots the CPU-only flavor with a small model (`qwen3:4b`) and `opencode` + `aider` preinstalled. For real use (GPU, web IDE, your own models), self-host below.
 
 **Requirements:** Linux, Docker, Docker Compose v2.
 
 See **[docs/gpu-setup.md](docs/gpu-setup.md)** for full GPU configuration.
 
 ```bash
-git clone https://github.com/InferHaven/inferhaven-core.git
-cd inferhaven-core
+git clone https://github.com/InferHaven/bulkhead.git
+cd bulkhead
 cp .env.example .env
 chmod 600 .env    # contains API keys — keep it owner-only
 # Edit .env — set CODE_SERVER_PASSWORD, AUTHORIZED_KEYS, and any API keys.
@@ -284,7 +284,7 @@ Four Docker services in a bridge network:
 | Service | Image | Purpose |
 | --------- | ------- | --------- |
 | `ollama` | `ollama/ollama` | AI inference, OpenAI-compatible API on :11434 |
-| `workspace` | Custom build | SSH terminal (:2222) + `haven` CLI + harnesses |
+| `workspace` | Custom build | SSH terminal (:2222) + `bulkhead` CLI + harnesses |
 | `code-server` | `linuxserver/code-server` | VS Code in Browser |
 | `caddy` | `caddy:2-alpine` | Reverse proxy, auto-HTTPS |
 

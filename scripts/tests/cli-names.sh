@@ -86,5 +86,20 @@ check "the docs name the command bulkhead" "" \
 check "no 'InferHaven Core' or 'InferHaven Cloud' outside the README's rename note" "" \
   "$(git -C "${ROOT}" grep -nE 'InferHaven (Core|Cloud)' -- . ':!LICENSE' ':!scripts/tests/cli-names.sh' | grep -v '^README.md:[0-9]*:> This project was previously called' || true)"
 
+# ── The repository is InferHaven/bulkhead, and a fresh clone is a folder named bulkhead ──
+# The devcontainer's folder inside the container keeps its old path on purpose
+# (/home/haven/projects/inferhaven-core: compose binds the checkout there whatever it is called).
+NOT_ME=(-- . ':!scripts/tests/cli-names.sh')
+check "no link to the repository's old name" "" \
+  "$(git -C "${ROOT}" grep -nE 'InferHaven/inferhaven-core' "${NOT_ME[@]}" || true)"
+check "no clone folder named inferhaven-core in the docs or comments" "" \
+  "$(git -C "${ROOT}" grep -nE '(^|[^/a-z-])inferhaven-core(/|$)' "${NOT_ME[@]}" || true)"
+# shellcheck disable=SC2016  # the backticks are literal Markdown, matched as text
+check "nothing calls the product inferhaven-core" "" \
+  "$(git -C "${ROOT}" grep -nE '\*\*inferhaven-core\*\*|`inferhaven-core`' "${NOT_ME[@]}" || true)"
+# shellcheck disable=SC2016  # the backticks are literal Markdown, matched as text
+check "the docs call the CLI bulkhead" "" \
+  "$(grep -rnE '`haven` CLI|CLI \(`haven`\)|file `haven` writes' "${DOCS[@]}" || true)"
+
 echo "cli-names: ${PASS} passed, ${FAIL} failed"
 [ "${FAIL}" -eq 0 ]

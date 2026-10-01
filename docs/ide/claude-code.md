@@ -9,7 +9,7 @@
 The easiest path, configure everything before the container starts:
 
 ```bash
-# In your inferhaven-core/.env file:
+# In your bulkhead/.env file:
 INSTALL_ASSISTANTS=claudecode
 ANTHROPIC_API_KEY=sk-ant-...
 CLAUDE_CODE_DISABLE_TELEMETRY=true
