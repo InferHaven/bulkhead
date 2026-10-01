@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get InferHaven running in 5 minutes.
+Get Bulkhead running in 5 minutes.
 
 ## Prerequisites
 

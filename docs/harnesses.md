@@ -1,6 +1,6 @@
 # Coding Assistant Harnesses
 
-InferHaven can auto-install and pre-configure suported harnesses on first boot. Set `INSTALL_ASSISTANTS` and any relevant API keys in `.env` before starting, and they will be ready in your workspace within a couple of minutes, SSH is never delayed.
+Bulkhead can auto-install and pre-configure suported harnesses on first boot. Set `INSTALL_ASSISTANTS` and any relevant API keys in `.env` before starting, and they will be ready in your workspace within a couple of minutes, SSH is never delayed.
 
 ```bash
 # .env
@@ -33,7 +33,7 @@ Harnesses that support local Ollama sync (`opencode`, `aider`, `pi`, `qwencode`,
 
 ## OpenCode (`opencode`)
 
-Terminal TUI harness. Supports local Ollama models and cloud APIs. InferHaven auto-generates and keeps `~/.config/opencode/config.json` in sync, no manual setup needed.
+Terminal TUI harness. Supports local Ollama models and cloud APIs. Bulkhead auto-generates and keeps `~/.config/opencode/config.json` in sync, no manual setup needed.
 
 ### Local models
 
@@ -75,8 +75,8 @@ Diff-based AI pair programmer. Reads your codebase, proposes changes as unified 
 
 ### Local models via `bulkhead aider`
 
-When `aider` is in `INSTALL_ASSISTANTS` .env variable, InferHaven manages `~/.aider.model.settings.yml` automatically.
-**Opt out of auto-sync**: remove the `## inferhaven:managed` line at the top of `~/.aider.model.settings.yml`. InferHaven will never touch that file again once the sentinel is gone.
+When `aider` is in `INSTALL_ASSISTANTS` .env variable, Bulkhead manages `~/.aider.model.settings.yml` automatically.
+**Opt out of auto-sync**: remove the `## inferhaven:managed` line at the top of `~/.aider.model.settings.yml`. Bulkhead will never touch that file again once the sentinel is gone.
 
 **Per-project overrides**: create `.aider.model.settings.yml` in your repo root. Aider loads it *after* the home-dir file, so your per-project settings win on any conflicts, no need to edit the managed file.
 
@@ -102,7 +102,7 @@ aider src/main.py tests/test_main.py
 IF a single model is installed, that model will be loaded, and if multiple models are installed you will see a model menu just like the one below.
 
 ```bash
-╭─  bulkhead aider — local models  ───────────────────────────────────╮
+╭─  bulkhead aider — local models  ────────────────────────────────╮
 │  MODEL                                       PARAMS     SIZE     │
 │  qwen2.5-coder:7b-instruct-q4_K_M            7B         4.7 GB   │
 │> qwen2.5-coder:14b-instruct-q4_K_M           14B        9.0 GB   │
@@ -144,13 +144,13 @@ Terminal harness designed for local and cloud models side-by-side. Pi uses an Op
 
 ### Local models
 
-When `pi` is in `INSTALL_ASSISTANTS`, InferHaven writes `~/.pi/agent/models.json` with all available Ollama models registered under a custom `ollama` provider.
+When `pi` is in `INSTALL_ASSISTANTS`, Bulkhead writes `~/.pi/agent/models.json` with all available Ollama models registered under a custom `ollama` provider.
 
-**Compat flags**: Ollama does not support the `developer` role used by some reasoning models or the `reasoning_effort` parameter. InferHaven sets `compat.supportsDeveloperRole: false` and `compat.supportsReasoningEffort: false` on the Ollama provider so Pi sends a standard `system` message instead.
+**Compat flags**: Ollama does not support the `developer` role used by some reasoning models or the `reasoning_effort` parameter. Bulkhead sets `compat.supportsDeveloperRole: false` and `compat.supportsReasoningEffort: false` on the Ollama provider so Pi sends a standard `system` message instead.
 
-**Opt out of auto-sync**: remove the `"_haven": "managed"` key from `~/.pi/agent/models.json`. InferHaven will never touch that file again once the sentinel is gone.
+**Opt out of auto-sync**: remove the `"_haven": "managed"` key from `~/.pi/agent/models.json`. Bulkhead will never touch that file again once the sentinel is gone.
 
-**Adding your own providers**: edit `~/.pi/agent/models.json` and add additional entries under `providers`. The `ollama` block is the only one InferHaven manages, everything else is yours.
+**Adding your own providers**: edit `~/.pi/agent/models.json` and add additional entries under `providers`. The `ollama` block is the only one Bulkhead manages, everything else is yours.
 
 **Recommendations**
 
@@ -165,7 +165,7 @@ When `pi` is in `INSTALL_ASSISTANTS`, InferHaven writes `~/.pi/agent/models.json
 
 ### Cloud models
 
-Set cloud API keys in `.env`. They are exported via `~/.inferhaven` and picked up by Pi automatically as environment variables. InferHaven also writes `~/.pi/agent/auth.json` (create-once, never overwritten) that references the env var names using Pi's variable-name resolution syntax, key rotation only requires updating `.env`.
+Set cloud API keys in `.env`. They are exported via `~/.inferhaven` and picked up by Pi automatically as environment variables. Bulkhead also writes `~/.pi/agent/auth.json` (create-once, never overwritten) that references the env var names using Pi's variable-name resolution syntax, key rotation only requires updating `.env`.
 
 | Key variable | Pi provider | Notes |
 | ------------ | ----------- | ----- |
@@ -191,9 +191,9 @@ pi  # /model → select provider → select model
 
 Agentic CLI harness run by the [AAIF](https://aaif.io/). Runs tasks autonomously using extensions (MCP servers, developer tools). Works best with models that support tool calling.
 
-InferHaven writes `~/.config/goose/config.yaml` on first install with the Ollama provider and the first available model, so goose is usable immediately without running `goose configure`. `OLLAMA_CONTEXT_LENGTH` is exported via `~/.inferhaven` and kept in sync with the active model's actual `num_ctx`.
+Bulkhead writes `~/.config/goose/config.yaml` on first install with the Ollama provider and the first available model, so goose is usable immediately without running `goose configure`. `OLLAMA_CONTEXT_LENGTH` is exported via `~/.inferhaven` and kept in sync with the active model's actual `num_ctx`.
 
-The InferHaven installed Goose version is pinned to v1.27.2 to avoid installing releases that break Ollama streaming. Override to test a newer release using the GOOSE_VERSION variable in the `.env` file, check [the goose repo](https://github.com/aaif-goose/goose/releases) for currently available versions.
+The Bulkhead installed Goose version is pinned to v1.27.2 to avoid installing releases that break Ollama streaming. Override to test a newer release using the GOOSE_VERSION variable in the `.env` file, check [the goose repo](https://github.com/aaif-goose/goose/releases) for currently available versions.
 
 ### Local models via `bulkhead goose`
 
@@ -206,7 +206,7 @@ When multiple models are installed, a model picker is presented before launch (s
 After selecting a model, a second menu asks whether to enable the **Ollama tool shim**:
 
 ```bash
-╭─  bulkhead goose — Ollama tool shim  ────────────────────────────────╮
+╭─  bulkhead goose — Ollama tool shim  ─────────────────────────────╮
 │  Experimental — helps models without native tool calls work with  │
 │  Goose                                                            │
 │> No  — standard mode (use native tool calls)                      │
@@ -223,7 +223,7 @@ The tool shim routes Goose's tool calls through a second interpreter model, whic
 
 Goose loads a large set of tool schemas into the context on every request. Combined with a large context window this can push Ollama's KV-cache allocation high enough to cause slow inference, stream stalls, or OOM crashes on marginal hardware. `bulkhead goose` caps `OLLAMA_CONTEXT_LENGTH` at `GOOSE_CTX_LIMIT` (default `32768`) regardless of what tuning is set for the model. If your model was tuned to a higher value, the launch line shows:
 
-  `[InferHaven] Context:    32768 tokens (model supports 131072, capped; set GOOSE_CTX_LIMIT to override)`
+  `[Bulkhead] Context:    32768 tokens (model supports 131072, capped; set GOOSE_CTX_LIMIT to override)`
 
 To reduce pressure further, set `GOOSE_CTX_LIMIT=16384` in `.env`. To allow the full model context, set it to the desired value. The cap only applies to `bulkhead goose`, plain `goose` reads `~/.inferhaven` directly.
 
@@ -285,7 +285,7 @@ With multiple models installed you will be able to select from a menu. Select wi
 The picker looks like this when multiple models are installed:
 
 ```bash
-╭─  bulkhead claude — local models  ──────────────────────────────────╮
+╭─  bulkhead claude — local models  ───────────────────────────────╮
 │  MODEL                                       PARAMS     SIZE     │
 │  qwen3.5:9b                                  9B         6.6 GB   │
 │  gpt-oss:20b                                 20B        14.0 GB  │
@@ -318,7 +318,7 @@ bulkhead claude    # Choose a local model to run
 
 ## Qwen Code (`qwencode`)
 
-Alibaba's CLI harness, designed around the Qwen model family. InferHaven auto-generates and keeps `~/.qwen/settings.json` in sync, no manual setup needed.
+Alibaba's CLI harness, designed around the Qwen model family. Bulkhead auto-generates and keeps `~/.qwen/settings.json` in sync, no manual setup needed.
 
 ### Local models
 
@@ -334,13 +334,13 @@ All Ollama models are registered as OpenAI-compatible providers pointing at the 
 | `qwen3.5:27b` | 17 GB | Better quality than 9b, still consumer-friendly |
 | `gemma4:31b-it-q4_K_M` | 20 GB | Higher quality than e4b model. |
 
-**Opt out of auto-sync**: remove the `~/.qwen/.inferhaven-managed` sidecar file. InferHaven will never touch `settings.json` again once the sidecar is gone.
+**Opt out of auto-sync**: remove the `~/.qwen/.inferhaven-managed` sidecar file. Bulkhead will never touch `settings.json` again once the sidecar is gone.
 
-**Adding your own providers**: InferHaven only manages the entries it created (tracked via the sidecar). Any providers you add manually are preserved across syncs.
+**Adding your own providers**: Bulkhead only manages the entries it created (tracked via the sidecar). Any providers you add manually are preserved across syncs.
 
 ### Cloud models
 
-Set `QWEN_API_KEY` or any supported cloud API key in `.env` and add your provider to `~/.qwen/settings.json`. InferHaven will not overwrite existing user config.
+Set `QWEN_API_KEY` or any supported cloud API key in `.env` and add your provider to `~/.qwen/settings.json`. Bulkhead will not overwrite existing user config.
 
 | Model | Backend | Notes |
 | ------- | --------- | ------- |
@@ -354,10 +354,10 @@ Set `QWEN_API_KEY` or any supported cloud API key in `.env` and add your provide
 ```bash
 bulkhead qwen    # recommended — model picker, bypasses auth screen, launches directly
 
-qwen          # also works — InferHaven writes security.auth.selectedType and
+qwen          # also works — Bulkhead writes security.auth.selectedType and
               # model.name into settings.json so the auth screen is skipped
 
-# List configured models (auto-populated by InferHaven)
+# List configured models (auto-populated by Bulkhead)
 cat ~/.qwen/settings.json
 ```
 
@@ -403,7 +403,7 @@ amp
 ## Continue (`continue`)
 
 Open-source AI coding assistant with a CLI agent (`cn`) and VS Code/code-server extension.
-When `continue` is in `INSTALL_ASSISTANTS`, InferHaven:
+When `continue` is in `INSTALL_ASSISTANTS`, Bulkhead:
 
 1. Installs the `cn` CLI (`npm i -g @continuedev/cli`)
 2. Writes `~/.continue/config.yaml` with all available Ollama models
@@ -411,9 +411,9 @@ When `continue` is in `INSTALL_ASSISTANTS`, InferHaven:
 
 ### Local models
 
-InferHaven manages `~/.continue/config.yaml` as long as `cn` is installed. Each model is registered with its actual `contextLength` (from `bulkhead tune`), and the `DEFAULT_MODEL` (or first available model) is also assigned the `autocomplete` role. The config is re-written on every sync, so it always reflects the current model list, even if Continue's auth flow modifies it.
+Bulkhead manages `~/.continue/config.yaml` as long as `cn` is installed. Each model is registered with its actual `contextLength` (from `bulkhead tune`), and the `DEFAULT_MODEL` (or first available model) is also assigned the `autocomplete` role. The config is re-written on every sync, so it always reflects the current model list, even if Continue's auth flow modifies it.
 
-**Opt out of auto-sync**: `touch ~/.continue/.no-autosync`. InferHaven will never touch the file again.
+**Opt out of auto-sync**: `touch ~/.continue/.no-autosync`. Bulkhead will never touch the file again.
 
 **Note:** Continue's first-run prompts for login or an Anthropic/cloud API key. This is for Continue Hub cloud features, it does not affect local Ollama models. Use `cn login` for Continue Hub. As of current testing a quick way through this is simply inputing something like `sk-ant-1` as an Anthropic key as shown below.
 
@@ -452,7 +452,7 @@ cat ~/.continue/config.yaml
 
 ### VS-Code Extension - Remote (non-code-server) setup
 
-For a local VS Code with the Continue extension connecting to a remote InferHaven server, use SSH port forwarding and point `apiBase` at `http://localhost:11434`. See [docs/ide/continue.md](ide/continue.md) for details.
+For a local VS Code with the Continue extension connecting to a remote Bulkhead server, use SSH port forwarding and point `apiBase` at `http://localhost:11434`. See [docs/ide/continue.md](ide/continue.md) for details.
 
 ---
 
@@ -460,7 +460,7 @@ For a local VS Code with the Continue extension connecting to a remote InferHave
 
 [avante.nvim](https://github.com/yetone/avante.nvim) is a Neovim plugin with a Cursor-like AI sidebar. Unlike other harnesses, `avante` installs a Neovim plugin (via lazy.nvim) rather than a standalone CLI tool. The `avante` command enters **Zen Mode**, a full-screen AI coding interface that looks like a CLI agent but runs entirely inside Neovim, giving you all Vim keybindings and your existing plugin ecosystem.
 
-When `avante` is in `INSTALL_ASSISTANTS`, InferHaven:
+When `avante` is in `INSTALL_ASSISTANTS`, Bulkhead:
 
 1. Installs lazy.nvim and avante.nvim (with a minimal `init.lua` if you have no existing Neovim config)
 2. Writes `~/.config/nvim/lua/plugins/avante.lua`, the plugin config (written once, never overwritten)
@@ -477,7 +477,7 @@ Inside Neovim, use `:AvanteModels` to pick a model (all Ollama models + configur
 
 ### Local models
 
-All available Ollama models appear under the `ollama` provider in `:AvanteModels`. InferHaven keeps the sidecar in sync after every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove`, new models appear in the picker automatically.
+All available Ollama models appear under the `ollama` provider in `:AvanteModels`. Bulkhead keeps the sidecar in sync after every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove`, new models appear in the picker automatically.
 
 **Recommended models**
 
@@ -488,9 +488,9 @@ All available Ollama models appear under the `ollama` provider in `:AvanteModels
 | `gpt-oss:20b` | 14GB | OpenAI’s open-weight model designed for powerful reasoning, agentic tasks, and versatile developer use cases. |
 | `qwen3-coder:30b` | 19GB | Alibaba's performant long context model for agentic and coding tasks. |
 
-**Opt out of auto-sync**: remove the `-- _haven: managed` first line from `~/.config/nvim/lua/inferhaven-avante-config.lua`. InferHaven will never touch that file again while preserving your existing config. You can then set any provider, model, or endpoint freely.
+**Opt out of auto-sync**: remove the `-- _haven: managed` first line from `~/.config/nvim/lua/inferhaven-avante-config.lua`. Bulkhead will never touch that file again while preserving your existing config. You can then set any provider, model, or endpoint freely.
 
-**Existing Neovim config**: if `~/.config/nvim/init.lua` already exists, InferHaven only adds `avante.lua` to your `lua/plugins/` directory, your existing config is untouched. If you don't use lazy.nvim, add avante.nvim via your plugin manager manually.
+**Existing Neovim config**: if `~/.config/nvim/init.lua` already exists, Bulkhead only adds `avante.lua` to your `lua/plugins/` directory, your existing config is untouched. If you don't use lazy.nvim, add avante.nvim via your plugin manager manually.
 
 **Full diff features**: the harness build step (`make`) downloads the prebuilt `avante_lib` binary automatically (no Rust required). If the download fails, run it manually:
 
@@ -500,7 +500,7 @@ cd ~/.local/share/nvim/lazy/avante.nvim && make
 
 ### Cloud models
 
-InferHaven writes a **multi-provider sidecar** that includes every cloud provider whose API key is configured in `.env`, alongside the local Ollama provider. The default provider is always `ollama` (local-first). Use `:AvanteSwitchProvider` inside Neovim to switch providers, the selection persists across sessions.
+Bulkhead writes a **multi-provider sidecar** that includes every cloud provider whose API key is configured in `.env`, alongside the local Ollama provider. The default provider is always `ollama` (local-first). Use `:AvanteSwitchProvider` inside Neovim to switch providers, the selection persists across sessions.
 
 ```bash
 # .env — include any combination of cloud keys

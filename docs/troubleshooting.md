@@ -6,7 +6,7 @@ Common issues and how to fix them. Run `bulkhead doctor` first, it catches most 
 
 ### "port is already in use"
 
-Another service is using a port InferHaven needs.
+Another service is using a port Bulkhead needs.
 
 ```bash
 # Find what's using the port (e.g., port 80)

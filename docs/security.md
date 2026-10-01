@@ -1,6 +1,6 @@
 # Security Hardening
 
-Production security checklist for InferHaven. Covers access control, network exposure, TLS, and secrets.
+Production security checklist for Bulkhead. Covers access control, network exposure, TLS, and secrets.
 
 ---
 
@@ -63,7 +63,7 @@ Apply changes with `docker compose up -d caddy` (not `restart`, restart keeps ol
 The Ollama API (`/api/*`, `/v1/*`) has no built-in authentication. Anyone who can reach Caddy can call it. Mitigations:
 
 - Set `ALLOWED_IPS` (simplest for trusted-network setups)
-- Put InferHaven behind a VPN and bind to a VPN interface only
+- Put Bulkhead behind a VPN and bind to a VPN interface only
 - Set a host firewall rule to restrict ports 80/443 to known IPs
 
 Ollama's own port (11434) is **not** exposed to the host by default, it stays inside the Docker network. Don't uncomment the `ports:` block in `docker-compose.yml` for it.

@@ -1,18 +1,18 @@
-# Contributing to InferHaven Core
+# Contributing to Bulkhead
 
-First, thank you for considering a contribution. InferHaven Core's source is fully available (we license it under FSL-1.1, a fair source license) because we believe private AI coding should be a right, not a feature gate, and the project is stronger when the community has a real role in shaping it.
+First, thank you for considering a contribution. Bulkhead's source is fully available (we license it under FSL-1.1, a fair source license) because we believe private AI coding should be a right, not a feature gate, and the project is stronger when the community has a real role in shaping it.
 
 This document explains how to contribute in a way that's productive for everyone, including how to set expectations around scope, response times, and what kinds of contributions we're looking for.
 
 ## A Note on Project Scope
 
-InferHaven Core is **opinionated infrastructure**. It is not trying to be a kitchen-sink AI platform. It is designed to do one thing well: provide a plug-and-play, self-hostable stack for running private AI coding assistants with optional GPU acceleration in a secure development environment.
+Bulkhead is **opinionated infrastructure**. It is not trying to be a kitchen-sink AI platform. It is designed to do one thing well: provide a plug-and-play, self-hostable stack for running private AI coding assistants with optional GPU acceleration in a secure development environment.
 
 This means that not every well-intentioned feature request or PR will be accepted, even if the code is good. We aim to keep Core focused, maintainable, and easy to understand. If you have a feature idea, **please open a GitHub Discussion or Issue before writing code**. This saves you time and helps us have a real conversation about whether the change fits the project's direction.
 
 ## Maintainer Bandwidth
 
-InferHaven Core is currently maintained by a small team (initially one person). We will do our best to respond to issues, discussions, and PRs in a reasonable timeframe, but please expect:
+Bulkhead is currently maintained by a small team (initially one person). We will do our best to respond to issues, discussions, and PRs in a reasonable timeframe, but please expect:
 
 - **Issues and Discussions**: typically a response within 1-2 weeks
 - **Pull Requests**: typically a first review within 2-4 weeks, sometimes longer
@@ -93,7 +93,7 @@ PRs are likely to be **closed without merge** if they:
 
 - Add major features without prior discussion
 - Significantly expand the project's scope (e.g., adding support for non-coding AI use cases)
-- Conflict with the project's direction (e.g., adding telemetry, adding features that duplicate InferHaven Cloud functionality)
+- Conflict with the project's direction (e.g., adding telemetry, adding features that duplicate Bulkhead Cloud functionality)
 - Introduce significant maintenance burden without clear benefit
 - Have been inactive for 30+ days without response to review feedback
 
@@ -119,7 +119,7 @@ InferHaven follows a simple principle: **be kind, be patient, and assume good fa
 
 ## License of Contributions
 
-By contributing to InferHaven Core, you agree that your contributions will be licensed under the same Functional Source License 1.1 with Apache 2.0 Future License (FSL-1.1-Apache-2.0) as the rest of the project. See the [LICENSE](./LICENSE) file for full terms.
+By contributing to Bulkhead, you agree that your contributions will be licensed under the same Functional Source License 1.1 with Apache 2.0 Future License (FSL-1.1-Apache-2.0) as the rest of the project. See the [LICENSE](./LICENSE) file for full terms.
 
 ## Questions?
 
@@ -127,4 +127,4 @@ Open a Discussion on GitHub, or [reach out to us](mailto:lighthouse@inferhaven.c
 
 Thanks again for being here.
 
-— The InferHaven Team
+The InferHaven Team

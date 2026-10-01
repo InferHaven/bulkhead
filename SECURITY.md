@@ -1,7 +1,7 @@
 # Security Policy
 
-We take the security of InferHaven seriously. Thank you for helping keep
-InferHaven and its users safe.
+We take the security of Bulkhead seriously. Thank you for helping keep
+Bulkhead and its users safe.
 
 This policy covers **inferhaven-core** (the self-hostable Docker stack). For
 operational hardening guidance (access control, network exposure, TLS, secrets,
@@ -14,7 +14,7 @@ distinguish a genuine vulnerability from a documented, by-design behavior (see
 
 **Please do not open public issues, pull requests, or forum posts for security
 vulnerabilities.** Disclosing a flaw publicly before a fix is available puts
-every InferHaven operator at risk.
+every Bulkhead operator at risk.
 
 Instead, report privately:
 
@@ -123,7 +123,7 @@ repository:
 
 **Out of scope:**
 
-- Forks and third-party redistributions of InferHaven.
+- Forks and third-party redistributions of Bulkhead.
 - Upstream vulnerabilities in third-party components we package (Ollama,
   code-server, Caddy, the base OS image, language toolchains). Report those to
   the respective projects. If our **default configuration** of one of those

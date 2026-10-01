@@ -1,6 +1,6 @@
-# Cline: InferHaven Integration Guide
+# Cline: Bulkhead Integration Guide
 
-[Cline](https://github.com/cline/cline) is an autonomous AI coding agent for VS Code that can read/write files, run terminal commands, and browse the web. You can configure it to use InferHaven's local Ollama instance for fully private, offline-capable AI assistance.
+[Cline](https://github.com/cline/cline) is an autonomous AI coding agent for VS Code that can read/write files, run terminal commands, and browse the web. You can configure it to use Bulkhead's local Ollama instance for fully private, offline-capable AI assistance.
 
 ## Installation
 
@@ -20,13 +20,13 @@ Open Cline settings (gear icon in the Cline panel) → **API Configuration**:
 
 ### Local connection (running inside code-server or SSH session)
 
-When you are connected to InferHaven via Remote SSH VSCode session or using the built-in code-server, Ollama is reachable on the Docker network:
+When you are connected to Bulkhead via Remote SSH VSCode session or using the built-in code-server, Ollama is reachable on the Docker network:
 
 ```html
 http://ollama:11434
 ```
 
-### Remote connection (Cline in a local VS Code, InferHaven on a different machine)
+### Remote connection (Cline in a local VS Code, Bulkhead on a different machine)
 
 Open an SSH tunnel before starting Cline:
 
@@ -53,7 +53,7 @@ Host inferhaven
 
 ### Remote connection via domain
 
-If InferHaven is deployed with a public domain and HTTPS, Caddy proxies `/api/*` to Ollama. You must have a proper DNS setup for a valid cert or node will complain:
+If Bulkhead is deployed with a public domain and HTTPS, Caddy proxies `/api/*` to Ollama. You must have a proper DNS setup for a valid cert or node will complain:
 
 ```html
 https://your-domain.com
@@ -93,7 +93,7 @@ For local models, enable **Compact Prompts** in Cline Settings → Features → 
 
 **"Connection refused" / model list empty:**
 
-- Confirm InferHaven is running: `make status`
+- Confirm Bulkhead is running: `make status`
 - Verify Ollama responds: `curl http://localhost:11434/api/tags`
 - If remote, check that your SSH tunnel is active
 

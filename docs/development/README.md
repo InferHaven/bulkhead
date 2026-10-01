@@ -1,8 +1,8 @@
 # Development Guide
 
-This is the contributor-facing documentation for InferHaven Core. If you want to *use* InferHaven, start at the [top-level README](../../README.md) and [docs/quickstart.md](../quickstart.md) instead.
+This is the contributor-facing documentation for Bulkhead. If you want to *use* Bulkhead, start at the [top-level README](../../README.md) and [docs/quickstart.md](../quickstart.md) instead.
 
-InferHaven Core is, deliberately, a small project: a Docker Compose stack, a Bash CLI (`haven`), a handful of provisioning and lifecycle scripts, and a status-bar daemon. There is no application framework, no test pyramid, no compile step. If you are comfortable with Bash, Docker, and Make, you have everything you need.
+Bulkhead is, deliberately, a small project: a Docker Compose stack, a Bash CLI (`haven`), a handful of provisioning and lifecycle scripts, and a status-bar daemon. There is no application framework, no test pyramid, no compile step. If you are comfortable with Bash, Docker, and Make, you have everything you need.
 
 ## Contents
 
@@ -94,7 +94,7 @@ Inside the workspace image (`docker/workspace/scripts/`):
 Two operational invariants the codebase enforces:
 
 - **Sentinel gating.** First-boot work runs only if `~/.haven/.initialized` is missing. Cold-boot reason (sentinel missing vs. ownership drift) is logged. Restarts must stay under ~5 s wall time, which is what the bounded shutdown trap (`timeout 3` on tmux save) protects.
-- **Managed-file sentinels.** Every config file `haven` writes carries a sentinel (`"_haven": "managed"`, `"_haven": true` per array entry, or `## inferhaven:managed` for YAML). Sync functions must check the sentinel and exit early if it is absent, InferHaven never overwrites user-customised configs.
+- **Managed-file sentinels.** Every config file `haven` writes carries a sentinel (`"_haven": "managed"`, `"_haven": true` per array entry, or `## inferhaven:managed` for YAML). Sync functions must check the sentinel and exit early if it is absent, Bulkhead never overwrites user-customised configs.
 
 ## Adding a new coding-assistant harness
 
@@ -159,7 +159,7 @@ Lifted from the simplify-review patterns the codebase already enforces:
 
 ## Testing and linting
 
-InferHaven currently has no unit-test framework. The verification surface is:
+Bulkhead currently has no unit-test framework. The verification surface is:
 
 **Shellcheck.** Every `.sh` file in the repo should pass `shellcheck` cleanly, the repo currently runs **zero warnings, zero infos** against shellcheck 0.10+. Several files carry `# shellcheck source=/dev/null`, `# shellcheck shell=bash`, or scoped `# shellcheck disable=...` directives where the warning is a known-false-positive against an intentional pattern; each suppression is annotated with *why*.
 
@@ -217,7 +217,7 @@ If your change touches GPU paths, run the equivalent on a GPU host; CPU-only ver
 
 ## Devcontainer flavors
 
-InferHaven ships two devcontainer configurations. Every conformant client (GitHub Codespaces, VS Code Dev Containers, DevPod, JetBrains Gateway, `@devcontainers/cli`) shows a flavor picker when more than one `devcontainer.json` is present. See `.devcontainer/README.md` for the full picker reference.
+Bulkhead ships two devcontainer configurations. Every conformant client (GitHub Codespaces, VS Code Dev Containers, DevPod, JetBrains Gateway, `@devcontainers/cli`) shows a flavor picker when more than one `devcontainer.json` is present. See `.devcontainer/README.md` for the full picker reference.
 
 | Flavor | Path | Boots | Best for |
 | --- | --- | --- | --- |
@@ -242,7 +242,7 @@ devcontainer up --workspace-folder . --config .devcontainer/full-stack/devcontai
 
 **GPU passthrough (full-stack only).** Uncomment the GPU block in `docker-compose.yml` exactly as documented for production, the override file deliberately does not touch it.
 
-**Running the full-stack flavor in GitHub Codespaces.** The full-stack flavor is built for **own-hardware dogfooding** (a dev InferHaven inside a prod InferHaven) and for local devcontainer clients (VS Code Dev Containers / DevPod), where every service works. It *also* boots in GitHub Codespaces, useful for surfacing Codespaces-specific bugs, but a few things are limited by the Codespaces platform itself (the `*.app.github.dev` forwarded-port edge), not by InferHaven. The compose override now publishes the stack ports to the host (`caddy:80`, `code-server:8443`, `ollama:11434`, `workspace:2222→22`) so Codespaces can forward them; the caveats below remain platform limits.
+**Running the full-stack flavor in GitHub Codespaces.** The full-stack flavor is built for **own-hardware dogfooding** (a dev Bulkhead inside a prod Bulkhead) and for local devcontainer clients (VS Code Dev Containers / DevPod), where every service works. It *also* boots in GitHub Codespaces, useful for surfacing Codespaces-specific bugs, but a few things are limited by the Codespaces platform itself (the `*.app.github.dev` forwarded-port edge), not by Bulkhead. The compose override now publishes the stack ports to the host (`caddy:80`, `code-server:8443`, `ollama:11434`, `workspace:2222→22`) so Codespaces can forward them; the caveats below remain platform limits.
 
 | In Codespaces | Status | Why / what to do |
 |---|---|---|
@@ -263,7 +263,7 @@ ssh -p 2222 haven@localhost            # in another (needs AUTHORIZED_KEYS set a
 **Nested devcontainer (dev-in-prod).** Two helpers, depending on the cloned project's `devcontainer.json` shape:
 
 - **`bulkhead devcontainer up`**: build-based projects (single `image:` / `build:` in `devcontainer.json`, no `dockerComposeFile`). Injects an explicit `workspaceMount` pointing at the translated host path and hands that to `@devcontainers/cli` against the shared docker socket.
-- **`bulkhead nest up`**: compose-based projects, including InferHaven inside InferHaven. Generates a small compose override that rewrites the workspace service's `.` binds to absolute host paths via `/proc/self/mountinfo`, pins the workspace image to the outer's already-built one, and runs `docker compose -p haven-nest-<basename> up -d`.
+- **`bulkhead nest up`**: compose-based projects, including Bulkhead inside Bulkhead. Generates a small compose override that rewrites the workspace service's `.` binds to absolute host paths via `/proc/self/mountinfo`, pins the workspace image to the outer's already-built one, and runs `docker compose -p haven-nest-<basename> up -d`.
 
 ```bash
 # Build-based (example: claude-code, vscode-remote-try-*, microsoft samples):
@@ -289,7 +289,7 @@ For everyday backend dev work that doesn't need a devcontainer, prefer the local
 
 ## Security hardening
 
-InferHaven uses `env_file: .env` in `docker-compose.yml` to inject API keys, the code-server password, the agent token, and SSH-related vars into the workspace container. That choice is convenient but has a sharp edge: **every value in `.env` is plaintext-readable** from inside the running container (`cat /proc/1/environ`) and from any host process that reads the file or invokes `docker compose config`.
+Bulkhead uses `env_file: .env` in `docker-compose.yml` to inject API keys, the code-server password, the agent token, and SSH-related vars into the workspace container. That choice is convenient but has a sharp edge: **every value in `.env` is plaintext-readable** from inside the running container (`cat /proc/1/environ`) and from any host process that reads the file or invokes `docker compose config`.
 
 The repo + CLI ship defense-in-depth defaults:
 
@@ -305,5 +305,5 @@ Things to keep in mind when contributing:
 
 - **Never paste `docker compose config` output.** Use `docker compose config --format json | jq 'del(.services[].environment)'` to inspect non-env structure without leaking keys.
 - **Don't echo env values from any new script.** Redact `*_KEY`, `*_TOKEN`, `*_SECRET`, `*_PASSWORD` patterns in diagnostic prints.
-- **Multi-user (`HAVEN_EXTRA_USERS=alice,bob`) bleeds the haven user's `.env` to alice/bob via `/proc/1/environ`.** If you're running InferHaven as a shared workspace, scope per-user secrets to mounted runtime config files (`~/.haven/secrets/<provider>.env`, mode 600) rather than the global `.env`. (Helper for this is on the roadmap; PRs welcome.)
+- **Multi-user (`HAVEN_EXTRA_USERS=alice,bob`) bleeds the haven user's `.env` to alice/bob via `/proc/1/environ`.** If you're running Bulkhead as a shared workspace, scope per-user secrets to mounted runtime config files (`~/.haven/secrets/<provider>.env`, mode 600) rather than the global `.env`. (Helper for this is on the roadmap; PRs welcome.)
 - **Backups (`bulkhead backup push`) sync `~/.haven`, `~/.config`, `~/.continue`, `~/.inferhaven`, not the project mount.** The host `.env` is therefore NOT included by default. Confirm before pointing a backup at a remote you don't fully trust.

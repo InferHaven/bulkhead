@@ -1,6 +1,6 @@
-# InferHaven Documentation
+# Bulkhead Documentation
 
-Welcome to the InferHaven Core documentation.
+Welcome to the Bulkhead documentation.
 
 ## Getting Started
 

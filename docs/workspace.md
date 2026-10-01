@@ -1,6 +1,6 @@
 # Workspace Reference
 
-Features available inside the InferHaven workspace after SSH login or in the web IDE terminal.
+Features available inside the Bulkhead workspace after SSH login or in the web IDE terminal.
 
 ---
 
@@ -108,7 +108,7 @@ For apt packages, use `bulkhead apt` instead of `sudo apt install` to persist th
 
 ## Starship prompt
 
-InferHaven ships with [Starship](https://starship.rs) enabled by default (`INSTALL_STARSHIP=1`). It shows git status, active language versions, background job count (surfaces `bulkhead pullback` workers), and command duration for slow operations.
+Bulkhead ships with [Starship](https://starship.rs) enabled by default (`INSTALL_STARSHIP=1`). It shows git status, active language versions, background job count (surfaces `bulkhead pullback` workers), and command duration for slow operations.
 
 **Nerd Font (recommended):** Install [JetBrains Mono Nerd Font](https://www.nerdfonts.com), or any Nerd Font, in your **terminal emulator** (client-side, not in the container).
 
@@ -119,12 +119,12 @@ InferHaven ships with [Starship](https://starship.rs) enabled by default (`INSTA
 | `bulkhead starship` | Show current mode, version, and config path |
 | `bulkhead starship emoji` | Switch badge to 🏡 IH, no Nerd Font required |
 | `bulkhead starship nf` | Switch badge to 󰚊 IH (Nerd Font icon) |
-| `bulkhead starship reset` | Restore InferHaven default config |
+| `bulkhead starship reset` | Restore Bulkhead default config |
 | `bulkhead starship edit` | Open `~/.config/starship.toml` in `$EDITOR` |
 
 The switch patches `~/.config/starship.toml` directly, so it persists across reconnects and tmux reattaches. Open a new shell after switching (`exec $SHELL -l`) to see the change.
 
-To opt out entirely: set `INSTALL_STARSHIP=0` in `.env`. Customise by editing `~/.config/starship.toml`, InferHaven never overwrites it after the first start.
+To opt out entirely: set `INSTALL_STARSHIP=0` in `.env`. Customise by editing `~/.config/starship.toml`, Bulkhead never overwrites it after the first start.
 
 ---
 
@@ -251,4 +251,4 @@ Bring your own dotfiles. On first boot only, the entrypoint clones `DOTFILES_REP
 DOTFILES_REPO=https://github.com/<you>/dotfiles.git
 ```
 
-If your install script writes `~/.zshrc` or `~/.tmux.conf`, it overrides the InferHaven defaults, your customisations win.
+If your install script writes `~/.zshrc` or `~/.tmux.conf`, it overrides the Bulkhead defaults, your customisations win.

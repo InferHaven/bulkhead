@@ -1,6 +1,6 @@
-# Claude Code: InferHaven Integration Guide
+# Claude Code: Bulkhead Integration Guide
 
-[Claude Code](https://docs.anthropic.com/en/docs/claude-code) is Anthropic's CLI harness. While Claude Code primarily uses Anthropic's API, you can use it alongside InferHaven in a powerful hybrid workflow: Claude Code for complex reasoning and multi-file changes, InferHaven's local models for quick completions, privacy-sensitive code, and offline work.
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code) is Anthropic's CLI harness. While Claude Code primarily uses Anthropic's API, you can use it alongside Bulkhead in a powerful hybrid workflow: Claude Code for complex reasoning and multi-file changes, Bulkhead's local models for quick completions, privacy-sensitive code, and offline work.
 
 ## Setup
 
@@ -19,7 +19,7 @@ Then `docker compose up -d`. By the time you SSH in, `claude` is on your PATH an
 
 ### Option B: Install manually after startup
 
-SSH into your InferHaven workspace and install:
+SSH into your Bulkhead workspace and install:
 
 ```bash
 ssh -p 2222 haven@localhost
@@ -36,7 +36,7 @@ echo 'export ANTHROPIC_API_KEY=sk-ant-...' >> ~/.inferhaven
 source ~/.inferhaven
 ```
 
-### Using Claude Code from InferHaven
+### Using Claude Code from Bulkhead
 
 ```bash
 cd ~/projects/my-app
@@ -44,7 +44,7 @@ cd ~/projects/my-app
 # Start Claude Code
 claude
 
-# Claude Code operates on files in your InferHaven workspace.
+# Claude Code operates on files in your Bulkhead workspace.
 # All file I/O is local. Only prompts and responses go to Anthropic's API.
 
 # Start Claude Code with a selected local model from menu
@@ -53,11 +53,11 @@ bulkhead claude
 
 ## Privacy Architecture
 
-When using Claude Code inside InferHaven:
+When using Claude Code inside Bulkhead:
 
 ```bash
 ┌─────────────────────────────────────────┐
-│           InferHaven Server             │
+│            Bulkhead Server              │
 │                                         │
 │  ┌──────────┐      ┌────────────────┐   │
 │  │  Claude  │      │   Your Code    │   │
@@ -79,11 +79,11 @@ When using Claude Code inside InferHaven:
 └─────────────────────────────────────────┘
 ```
 
-**Key insight:** Your codebase lives on the InferHaven server. Claude Code reads files locally (fast) and only sends prompts/responses over the network. For tasks where even prompts must stay private, switch to the local Ollama model via aider or Continue.dev.
+**Key insight:** Your codebase lives on the Bulkhead server. Claude Code reads files locally (fast) and only sends prompts/responses over the network. For tasks where even prompts must stay private, switch to the local Ollama model via aider or Continue.dev.
 
 ## Advanced: MCP Server for Local Context
 
-You can configure Claude Code to use InferHaven's Ollama as an MCP (Model Context Protocol) server for augmented context:
+You can configure Claude Code to use Bulkhead's Ollama as an MCP (Model Context Protocol) server for augmented context:
 
 ```json
 // ~/.claude/mcp.json
@@ -104,4 +104,4 @@ This is experimental and depends on Claude Code's MCP support for custom endpoin
 - **Use Claude Code for the hard stuff:** Multi-file refactoring, understanding complex codebases, generating test suites, architecture decisions.
 - **Use local models for the fast stuff:** Autocomplete (Continue.dev), quick single-file edits (aider), boilerplate, and anything where latency matters.
 - **Use local models for the sensitive stuff:** If a file contains API keys, credentials, proprietary algorithms, or client data, use Ollama instead of Claude Code for that file.
-- **InferHaven as your dev server:** Even if you primarily use Claude Code with Anthropics models, InferHaven gives you a reproducible, always-available dev environment accessible from any device.
+- **Bulkhead as your dev server:** Even if you primarily use Claude Code with Anthropics models, Bulkhead gives you a reproducible, always-available dev environment accessible from any device.

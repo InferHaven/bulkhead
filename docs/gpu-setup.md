@@ -1,6 +1,6 @@
 # GPU Setup Guide
 
-InferHaven supports NVIDIA (CUDA), AMD (ROCm), and AMD/Intel (Vulkan) GPUs for AI inference. Follow the section that matches your hardware.
+Bulkhead supports NVIDIA (CUDA), AMD (ROCm), and AMD/Intel (Vulkan) GPUs for AI inference. Follow the section that matches your hardware.
 
  **Not sure which section applies?**
 
@@ -85,7 +85,7 @@ Uncomment NVIDIA specific sections of the `ollama` docker service, shown below:
               capabilities: [gpu]
 ```
 
-### Step 4: Start InferHaven
+### Step 4: Start Bulkhead
 
 ```bash
 docker compose up -d
@@ -167,7 +167,7 @@ AMD ROCm uses device passthrough. Edit the `ollama` service in `docker-compose.y
 > getent group video render
 > ```
 
-### Step 3: Start InferHaven
+### Step 3: Start Bulkhead
 
 ```bash
 docker compose up -d
@@ -251,7 +251,7 @@ vulkaninfo --summary
 > - `group_add` must use numeric GIDs, the Ollama image has no `/etc/group` entries for `video` or `render`. The defaults above match Ubuntu/Debian. Verify yours with: `getent group video render`
 >
 
-### Step 3: Start InferHaven
+### Step 3: Start Bulkhead
 
 ```bash
 docker compose up -d
@@ -341,7 +341,7 @@ If your card runs the [ROCm v7 GPU list](https://docs.ollama.com/gpu#linux-suppo
 
 ### Known issues on AMD / Vulkan
 
-> **Upstream Ollama bug, Vulkan + flash attention + Gemma3.** On AMD GPUs running the Vulkan backend, enabling `OLLAMA_FLASH_ATTENTION=1` can cause Gemma3 (and some heavy-quant models) to load with partial offload (~33 %) and emit corrupted or nonsense output. The same model loads correctly on NVIDIA/CUDA. **This is an upstream Ollama/Vulkan issue, not InferHaven tuning**. `bulkhead tune` is GPU-agnostic and never sets `num_gpu`.
+> **Upstream Ollama bug, Vulkan + flash attention + Gemma3.** On AMD GPUs running the Vulkan backend, enabling `OLLAMA_FLASH_ATTENTION=1` can cause Gemma3 (and some heavy-quant models) to load with partial offload (~33 %) and emit corrupted or nonsense output. The same model loads correctly on NVIDIA/CUDA. **This is an upstream Ollama/Vulkan issue, not Bulkhead tuning**. `bulkhead tune` is GPU-agnostic and never sets `num_gpu`.
 >
 > **What to try:**
 >

@@ -2,16 +2,16 @@
   <img src="docs/img/inferhaven-logo.png" alt="InferHaven lighthouse mark" width="140" />
 </p>
 
-<h1 align="center">InferHaven</h1>
+<h1 align="center">Bulkhead</h1>
 
-  <p align="center"><em>A safe haven for AI inference</em></p>
-  <p align="center">
-    Self-hostable AI coding server with GPU support, terminal-first design, and complete privacy.
-  </p>
+<p align="center"><em>A safe haven for AI inference</em></p>
+<p align="center">
+  Self-hostable Docker stack: local AI inference through Ollama, SSH workspace, web IDE, and up to ten coding assistants wired to your models.
 </p>
+<p align="center"><sub>Built by <a href="https://inferhaven.com">InferHaven</a>, a one-person research studio for privacy and local-first AI.</sub></p>
 
 <p align="center">
-  <img src="docs/img/demo.gif" alt="InferHaven demo: SSH in, ask a local model to extend the stack, watch it run" width="820" />
+  <img src="docs/img/demo.gif" alt="Bulkhead demo: SSH in, ask a local model to extend the stack, watch it run" width="820" />
 </p>
 
 <p align="center">
@@ -30,36 +30,40 @@
 <p align="center">
   <a href="#quick-start">Quick Start</a> •
   <a href="#configuration">Configuration</a> •
-  <a href="#haven-cli">Haven CLI</a> •
+  <a href="#bulkhead-cli">Bulkhead CLI</a> •
   <a href="docs/quickstart.md">Full Guide</a> •
   <a href="docs/harnesses.md">Harnesses & Models</a> •
-  <a href="https://inferhaven.com">InferHaven Cloud ↗</a>
+  <a href="https://inferhaven.com/bulkhead/#cloud-waitlist">Bulkhead Cloud ↗</a>
 </p>
 
 ---
 
-## What is InferHaven?
+> [!NOTE]
+> This project was previously called InferHaven Core; its hosted edition was InferHaven Cloud, now Bulkhead Cloud. The command is now `bulkhead` (short form: `bh`). If you have scripts using `haven`, they still work: `haven` prints a one-line notice and forwards to `bulkhead`.
 
-InferHaven is your own private AI coding server: a self-hostable Docker stack that turns hardware you control into a private, secure dev environment. It runs Ollama for local inference and hands you a pre-configured workspace over SSH and a web IDE, with your own models and up to ten coding assistants already wired to them. It isn't another coding assistant competing for your editor; it's the box they all run in.
+## What is Bulkhead?
 
-- **Local AI inference** via Ollama: OpenAI-compatible API, any open-weight model
-- **Complete privacy**: local code and weights never leave your machine when you use local models
-- **Terminal-first workspace**: SSH (+ mosh for connection-resilient remote shells), tmux with auto-save, zsh + Starship, neovim, ripgrep, fzf, supercronic, lazygit, git-delta, direnv, zoxide, eza, mise, atuin, tmate
-- **Web IDE**: VS Code in the browser via code-server
-- **Coding harnesses**: Claude Code, OpenCode, Aider, Qwen Code, Amp, Gemini CLI, Goose, Continue CLI, Pi, and Avante, all of which can be auto-installed and pre-configured from `.env`
-- **GPU support**: NVIDIA and AMD GPUs supported out of the box
-- **Cloud models**: use any popular provider's models instead of, or alongside, your private local models
-- **Real security**: leverages Docker for a secure dev environment; SSH is key-only
-- **Fast, reproducible builds**: BuildKit cache mounts make warm rebuilds < 30s
-- **Multi-user**: provision extra users with their own SSH keys via `.env`
-- **Devcontainer-ready**: works with VS Code Dev Containers, GitHub Codespaces, DevPod, JetBrains Gateway, and headless `@devcontainers/cli`. Two flavors ship: a lightweight Codespaces flavor for CPU-only quickstarts and a full-stack flavor that boots the same production services (web IDE + Caddy) with optional GPU passthrough. Nested devcontainers (dev-in-prod) supported via the `bulkhead devcontainer` command.
-- **Backup & restore**: `bulkhead backup configure` sets up an rclone remote interactively; `bulkhead backup push <remote:path>` snapshots home directory and harness configs.
+Bulkhead is a self-hostable Docker stack that turns hardware you control into your own AI coding server. It runs Ollama for local models and gives you a pre-configured workspace over SSH and a web IDE, with your own models and up to ten coding assistants already wired to them. No per-token meter. Free to self-host.
+
+It is not another coding assistant competing for your editor. It is the box the assistants run in.
+
+- **Local inference**: Ollama with an OpenAI-compatible API and any open-weight model. NVIDIA and AMD GPU support out of the box.
+- **Cloud models**: use a popular provider's models instead of, or alongside, your local ones.
+- **Privacy**: with local models, your code and the model weights stay on your own hardware; with a cloud model provider, your prompts go to that provider.
+- **Terminal-first workspace**: SSH and mosh, tmux sessions that save themselves, zsh with Starship, neovim, ripgrep, fzf, supercronic, lazygit, git-delta, direnv, zoxide, eza, mise, atuin and tmate.
+- **Web IDE**: VS Code in the browser through code-server.
+- **Coding assistants**: Claude Code, OpenCode, Aider, Qwen Code, Amp, Gemini CLI, Goose, Continue CLI, Pi and Avante, each installable and pre-configured from `.env`. Seven of them (`opencode`, `aider`, `qwencode`, `pi`, `goose`, `continue`, `avante`) re-render their config on every model pull.
+- **Security**: SSH is key-only; the Ollama and code-server ports are not exposed by default, and all traffic routes through the Caddy reverse proxy, which provides HTTPS.
+- **Multi-user**: provision extra users with their own SSH keys via `.env`.
+- **Devcontainer-ready**: VS Code Dev Containers, GitHub Codespaces, DevPod, JetBrains Gateway and the headless `@devcontainers/cli`. Two flavours: a light Codespaces flavour for CPU-only quick starts, and a full-stack flavour with the web IDE, Caddy and optional GPU passthrough. Nested devcontainers through `bulkhead devcontainer`. The Codespaces flavour boots a small model (`qwen3:4b`) with `opencode` and `aider` preinstalled.
+- **Backups**: `bulkhead backup configure` sets up an rclone remote; `bulkhead backup push <remote:path>` snapshots your home directory and assistant configs.
+- **Fast rebuilds**: warm rebuilds take under 30 seconds with BuildKit cache mounts.
 
 ## Why not just wire it up myself?
 
-You can, and if you do, you've built the first couple of layers of what InferHaven ships whole. The DIY path is Ollama, plus a web UI, plus each assistant's config, plus a reverse proxy, HTTPS, SSH, and backups: a weekend to assemble and a maintenance tab that never closes, since every assistant's config drifts the moment you pull a new model.
+You can, and if you do, you've built the first couple of layers of what Bulkhead ships whole. The DIY path is Ollama, plus a web UI, plus each assistant's config, plus a reverse proxy, HTTPS, SSH, and backups: a weekend to assemble and a maintenance tab that never closes, since every assistant's config drifts the moment you pull a new model.
 
-InferHaven is those same parts, assembled and kept in tune. `docker compose up -d` brings the whole stack up, and seven assistants (`opencode`, `aider`, `qwencode`, `pi`, `goose`, `continue`, `avante`) re-render their config automatically on every model pull. It's still just Docker. The exit door is the same size as the front door.
+Bulkhead is those same parts, assembled and kept in tune. `docker compose up -d` brings the whole stack up, and seven assistants (`opencode`, `aider`, `qwencode`, `pi`, `goose`, `continue`, `avante`) re-render their config automatically on every model pull. It's still just Docker. The exit door is the same size as the front door.
 
 ## Quick Start
 
@@ -132,7 +136,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 Supported Harnesses: `claudecode`, `opencode`, `aider`, `qwencode`, `amp`, `gemini`, `pi`, `goose`, `continue`, `avante`
 
-When `opencode`, `aider`, `qwencode`, `pi`, `goose`, `continue`, or `avante` is included, local Ollama models are auto-configured and kept in sync: every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove` updates all harness configs immediately. Most harnesses use an internal sentinel so InferHaven never touches user-customised configs; `continue` syncs whenever `cn` is installed (opt out: `touch ~/.continue/.no-autosync`).
+When `opencode`, `aider`, `qwencode`, `pi`, `goose`, `continue`, or `avante` is included, local Ollama models are auto-configured and kept in sync: every `bulkhead pull`, `bulkhead tune`, and `bulkhead remove` updates all harness configs immediately. Most harnesses use an internal sentinel so Bulkhead never touches user-customised configs; `continue` syncs whenever `cn` is installed (opt out: `touch ~/.continue/.no-autosync`).
 
 See **[docs/harnesses.md](docs/harnesses.md)** for opt-out, per-project override instructions, and for per-harness setup details and recommended models.
 
@@ -151,9 +155,9 @@ AUTHORIZED_KEYS="ssh-ed25519 AAAA...key1 user@host
 ssh-ed25519 AAAA...key2 user2@host"
 ```
 
-## Haven CLI
+## Bulkhead CLI
 
-`haven` is InferHaven's unified CLI. It works in two contexts:
+Bulkhead's CLI, `bulkhead`, works in two contexts:
 
 **From the host** (repo directory) manages Docker services:
 
@@ -286,7 +290,7 @@ Four Docker services in a bridge network:
 
 ```javascript
 ┌──────────────────────────────────────────────┐
-│                 InferHaven                   │
+│                  Bulkhead                    │
 │                                              │
 │  ┌───────────┐  ┌──────────┐  ┌───────────┐  │
 │  │ Workspace │  │  Ollama  │  │Code Server│  │
@@ -318,28 +322,28 @@ For deployment hardening (access control, network exposure, TLS, secrets, and th
 
 ## AI-assisted development
 
-AI assistants are part of how InferHaven is built. We use them to accelerate the work: drafting code, refactoring, generating tests, and writing documentation.
+AI assistants are part of how Bulkhead is built. We use them to accelerate the work: drafting code, refactoring, generating tests, and writing documentation.
 
-What doesn't change: every change is reviewed, understood, and manually tested by a human before it merges. InferHaven is owned and maintained by its human author(s). AI is a tool we use, not the author.
+What doesn't change: every change is reviewed, understood, and manually tested by a human before it merges. Bulkhead is owned and maintained by its human author(s). AI is a tool we use, not the author.
 
 ## License
 
-InferHaven Core is licensed under the **Functional Source License 1.1 with Apache 2.0 Future License** (FSL-1.1-Apache-2.0).
+Bulkhead is licensed under the **Functional Source License 1.1 with Apache 2.0 Future License** (FSL-1.1-Apache-2.0).
 
 **What this means in practice:**
 
-- ✅ You can use, modify, and self-host InferHaven Core for any purpose: personal, commercial, internal, or research.
+- ✅ You can use, modify, and self-host Bulkhead for any purpose: personal, commercial, internal, or research.
 - ✅ Enterprises can deploy it on their own infrastructure, integrate it with internal tools, and modify it as needed.
 - ✅ Consultants and integrators can offer professional services around it.
-- ❌ You cannot offer a commercial managed-hosting service that competes with InferHaven Cloud (until each version's two-year window expires).
+- ❌ You cannot offer a commercial managed-hosting service that competes with Bulkhead Cloud (until each version's two-year window expires).
 - 🔄 Two years after each version's release, that version automatically converts to the Apache License 2.0, a fully permissive open-source license with no restrictions.
 
 See the [LICENSE](./LICENSE) file for full terms, [docs/licensing.md](./docs/licensing.md) for a plain-language explainer, and [fsl.software](https://fsl.software/) for background on the license.
-
+  
 ---
 
 <p align="center">
-  <strong>InferHaven</strong> · A safe haven for AI inference.<br>
+  <strong>Bulkhead</strong> · A safe haven for AI inference · Built by InferHaven<br>
   <a href="https://inferhaven.com">Website</a> •
   <a href="https://discord.gg/X5htGNnEh5">Discord</a> •
   <a href="https://twitter.com/InferHaven">Twitter</a>
