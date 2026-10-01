@@ -36,7 +36,7 @@ _haven_container() {
 # ── The CLI inside the workspace ─────────────────────────────────────────────
 # Called by its old name with the rename notice turned off: a workspace image
 # built before the rename has no `bulkhead`, and this keeps it working until
-# the next `bulkhead up` rebuilds it.
+# `bulkhead update` rebuilds it (`up` alone reuses an image that exists).
 _WS_CLI=(env BULKHEAD_RENAME_NOTICE=0 haven)
 
 # ── Delegate to workspace container ──────────────────────────────────────────
@@ -108,7 +108,15 @@ cmd_logs() {
 
 cmd_update() {
   echo -e "${CYAN}[Bulkhead]${NC} Updating..."
-  docker compose -f "$COMPOSE_FILE" pull
+  # code-server and caddy are built here and tagged :local, so no registry has
+  # them: a plain `pull` fails on them, and `set -e` used to stop the update
+  # before the rebuild. --ignore-buildable needs Compose 2.22; older Compose v2
+  # gets --ignore-pull-failures, which pulls the rest and reports the two.
+  if docker compose pull --help 2>/dev/null | grep -q -- '--ignore-buildable'; then
+    docker compose -f "$COMPOSE_FILE" pull --ignore-buildable
+  else
+    docker compose -f "$COMPOSE_FILE" pull --ignore-pull-failures
+  fi
   docker compose -f "$COMPOSE_FILE" up -d --build
   echo -e "${GREEN}[Bulkhead]${NC} Updated to latest."
 }
