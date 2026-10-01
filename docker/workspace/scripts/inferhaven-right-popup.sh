@@ -5,7 +5,7 @@
 # SC1007: `TMUX= tmux ...` intentionally launches nested tmux from inside an
 #   outer tmux client (the popup runs under the outer session).
 ###############################################################################
-# InferHaven status-right click dispatcher
+# Bulkhead status-right click dispatcher
 #
 # Opens a popup with five views:
 #   System      — memory bars (active/cache/available), per-core CPU, disk, GPU
@@ -497,7 +497,7 @@ while true; do
     if [ $_docker_ok -ne 0 ]; then
         printf "  ${CD}Docker error:${CR}\n  %s\n\n" "$_di_err"
     elif [ -z "$_names" ]; then
-        printf "  ${CD}No InferHaven containers found running.${CR}\n\n"
+        printf "  ${CD}No Bulkhead containers found running.${CR}\n\n"
     elif printf "%s" "$_stats" | grep -q "^Error"; then
         printf "  ${CD}docker stats error:${CR}\n  %s\n\n" "$_stats"
     else
@@ -782,7 +782,7 @@ fi
 # ── Open the popup ────────────────────────────────────────────────────────────
 tmux display-popup -E \
   -w 92% -h 88% \
-  -T " InferHaven  ← → navigate   q close " \
+  -T " Bulkhead  ← → navigate   q close " \
   "exec tmux attach-session -t '${SESSION}'"
 
 # Always exit 0 — prevents run-shell from printing "returned N" error messages

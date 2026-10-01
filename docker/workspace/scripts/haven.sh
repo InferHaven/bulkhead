@@ -35,7 +35,7 @@ fi
 # Shared library: _haven_resolve_project, _haven_resolve_container,
 # _haven_resolve_compose_files (plus back-compat aliases _haven_compose_project,
 # _haven_container, _haven_self_container_id). Used by monitoring scripts +
-# popup + alert-watcher so every InferHaven surface resolves containers the
+# popup + alert-watcher so every Bulkhead surface resolves containers the
 # same way.
 # shellcheck source=/dev/null
 . /usr/local/lib/haven/haven-resolve.sh
@@ -104,7 +104,7 @@ cmd_help() {
   echo "    starship                  Show prompt mode and config path"
   echo "    starship emoji            Switch badge to emoji mode (🏡 IH) — no Nerd Font needed"
   echo "    starship nf               Switch badge to Nerd Font mode (󰚊 IH)"
-  echo "    starship reset            Restore InferHaven default config"
+  echo "    starship reset            Restore Bulkhead default config"
   echo "    starship edit             Open ~/.config/starship.toml in \$EDITOR"
   echo ""
   echo -e "  ${BOLD}Tmux workspace${NC}"
@@ -166,8 +166,8 @@ cmd_help() {
   echo "    devcontainer down [path]                               Tear it down"
   echo "    devcontainer help                                      Full reference"
   echo ""
-  echo -e "  ${BOLD}Nested InferHaven compose (inferhaven-in-inferhaven)${NC}"
-  echo "    nest up <path> [--flavor <sub>]    Spin up a second InferHaven stack"
+  echo -e "  ${BOLD}Nested Bulkhead compose (inferhaven-in-inferhaven)${NC}"
+  echo "    nest up <path> [--flavor <sub>]    Spin up a second Bulkhead stack"
   echo "    nest down <path>                   Tear down the nested stack"
   echo "    nest exec <path> -- <cmd>          Exec inside (-u haven)"
   echo "    nest status [path|all]             Show running nested stacks"
@@ -1923,7 +1923,7 @@ cmd_bench() {
   # ── Block 4 — human-readable ────────────────────────────────────────────────
   local avg_note=""
   [ "${runs}" -gt 1 ] && avg_note=" (avg of ${runs} runs)"
-  printf '\n  %bInferHaven bench%b — %s\n' "${BOLD}" "${NC}" "${model}"
+  printf '\n  %bBulkhead bench%b — %s\n' "${BOLD}" "${NC}" "${model}"
   if [ "${runs}" -gt 1 ]; then
     local idx=1 g
     while IFS= read -r g; do
@@ -2695,7 +2695,7 @@ cmd_ssh() {
   local PORT="${SSH_PORT:-2222}"
   local HOST; HOST="$(_resolve_host)"
   echo ""
-  echo -e "  ${CYAN}SSH into InferHaven:${NC}"
+  echo -e "  ${CYAN}SSH into Bulkhead:${NC}"
   echo "    ssh -p ${PORT} haven@${HOST}"
   if [ "$HOST" = "localhost" ]; then
     echo ""
@@ -3228,7 +3228,7 @@ cmd_apt() {
 # ── Doctor ────────────────────────────────────────────────────────────────────
 cmd_doctor() {
   echo ""
-  echo -e "  ${CYAN}${BOLD}InferHaven Doctor${NC} — Checking your environment..."
+  echo -e "  ${CYAN}${BOLD}Bulkhead Doctor${NC} — Checking your environment..."
   echo ""
   local ISSUES=0
 
@@ -3364,7 +3364,7 @@ cmd_doctor() {
   done
 
   # ── Ollama backend (AMD / Vulkan known-bad-combo warnings) ───────────────
-  # InferHaven never modifies Ollama's GPU layer offload or backend selection;
+  # Bulkhead never modifies Ollama's GPU layer offload or backend selection;
   # this section just surfaces known-broken upstream combinations so users can
   # spot them before they manifest as "nonsense output" or "33% offload"
   # symptoms (typically: Gemma3 + Vulkan + flash attention).
@@ -3487,7 +3487,7 @@ cmd_doctor() {
   echo ""
   echo "  ──────────────────────────────────────────"
   if [ "$ISSUES" -eq 0 ]; then
-    echo -e "  ${GREEN}✓ All checks passed. InferHaven is ready.${NC}"
+    echo -e "  ${GREEN}✓ All checks passed. Bulkhead is ready.${NC}"
   elif [ "$ISSUES" -le 2 ]; then
     echo -e "  ${YELLOW}⚠ ${ISSUES} minor issue(s) found. See above.${NC}"
   else
@@ -4145,7 +4145,7 @@ cmd_starship() {
     echo -e "  ${YELLOW}Starship is not installed in this workspace.${NC}"
     echo "  (The .env setting INSTALL_STARSHIP controls this at build time.)"
     echo ""
-    printf "  Install Starship now with InferHaven defaults? [y/N] "
+    printf "  Install Starship now with Bulkhead defaults? [y/N] "
     read -r answer
     if [[ "$answer" =~ ^[Yy]$ ]]; then
       curl -sS https://starship.rs/install.sh | sh -s -- --yes
@@ -4170,13 +4170,13 @@ cmd_starship() {
         echo "Default template not found at /etc/inferhaven/starship.toml." >&2
         return 1
       fi
-      printf "This will overwrite %s with InferHaven defaults. Continue? [y/N] " "$config"
+      printf "This will overwrite %s with Bulkhead defaults. Continue? [y/N] " "$config"
       read -r answer
       [[ "$answer" =~ ^[Yy]$ ]] || return 0
       cp /etc/inferhaven/starship.toml "$config"
       mkdir -p "$(dirname "$mode_file")"
       echo "nf" > "$mode_file"
-      echo "Config reset to InferHaven defaults (Nerd Font mode)."
+      echo "Config reset to Bulkhead defaults (Nerd Font mode)."
       echo "Open a new shell (or: exec \$SHELL -l) to apply."
       ;;
 
@@ -4216,7 +4216,7 @@ _starship_set_mode() {
 
   if [ ! -f "$config" ]; then
     echo "No starship config found at ${config}." >&2
-    echo "Run 'bulkhead starship reset' to create one from the InferHaven default." >&2
+    echo "Run 'bulkhead starship reset' to create one from the Bulkhead default." >&2
     return 1
   fi
 
@@ -4515,8 +4515,8 @@ cmd_devcontainer() {
         echo "  Workarounds for the inferhaven-inside-inferhaven case:"
         echo "    1. docker compose -f ${host}/docker-compose.codespaces.yml \\"
         echo "                      -p inferhaven-dev up -d"
-        echo "    2. Develop InferHaven from your host, not from inside a"
-        echo "       running InferHaven workspace."
+        echo "    2. Develop Bulkhead from your host, not from inside a"
+        echo "       running Bulkhead workspace."
         exit 1
       fi
 
@@ -4636,7 +4636,7 @@ cmd_devcontainer() {
   esac
 }
 
-# ── Nested InferHaven compose helper (inferhaven-in-inferhaven) ──────────────
+# ── Nested Bulkhead compose helper (inferhaven-in-inferhaven) ──────────────
 # `bulkhead devcontainer up` refuses compose-based projects because docker-compose
 # resolves relative volumes against the compose-file dir on the inner FS and
 # sends those (inner) paths to the outer docker daemon, which can't see them.
@@ -4956,9 +4956,9 @@ EOF
 
     help|--help|-h|"")
       echo ""
-      echo -e "  ${CYAN}bulkhead nest${NC} — nested InferHaven compose helper"
+      echo -e "  ${CYAN}bulkhead nest${NC} — nested Bulkhead compose helper"
       echo ""
-      echo "  Spin up a second InferHaven stack from a cloned repo inside the"
+      echo "  Spin up a second Bulkhead stack from a cloned repo inside the"
       echo "  running outer workspace. 'bulkhead devcontainer up' refuses compose-"
       echo "  based projects because docker-compose passes inner paths to the"
       echo "  outer daemon. 'bulkhead nest' generates a compose override that"
@@ -5064,7 +5064,7 @@ case "${1:-help}" in
 
   # Nested devcontainer helper (dev-inside-prod, build-based projects)
   devcontainer)   shift; cmd_devcontainer "$@" ;;
-  # Nested InferHaven compose helper (compose-based, inferhaven-in-inferhaven)
+  # Nested Bulkhead compose helper (compose-based, inferhaven-in-inferhaven)
   nest)           shift; cmd_nest "$@" ;;
 
   # Tool-config sync (re-render coding-assistant configs)

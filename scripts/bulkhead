@@ -167,7 +167,7 @@ cmd_ssh() {
   PORT="${PORT:-2222}"
   local HOST; HOST="$(_resolve_host)"
   echo ""
-  echo -e "  ${CYAN}SSH into InferHaven:${NC}"
+  echo -e "  ${CYAN}SSH into Bulkhead:${NC}"
   echo "    ssh -p ${PORT} haven@${HOST}"
   if [ "$HOST" = "localhost" ]; then
     echo ""
@@ -380,7 +380,7 @@ cmd_help() {
 
 cmd_doctor() {
   echo ""
-  echo -e "  ${CYAN}InferHaven Doctor${NC} — Diagnosing your environment..."
+  echo -e "  ${CYAN}Bulkhead Doctor${NC} — Diagnosing your environment..."
   echo ""
   ISSUES=0
 
@@ -516,7 +516,7 @@ cmd_doctor() {
 
   # ── Port conflicts ─────────────────────────────────────────────────────────
   echo ""
-  # Returns true if an InferHaven container holds the given host port
+  # Returns true if an Bulkhead container holds the given host port
   _inferhaven_owns_port() {
     docker ps --format '{{.Ports}}' --filter "name=inferhaven-" 2>/dev/null \
       | grep -qE ":$1->"
@@ -526,7 +526,7 @@ cmd_doctor() {
     if ss -tlnp 2>/dev/null | grep -q ":${PORT} " || \
        netstat -tlnp 2>/dev/null | grep -q ":${PORT} "; then
       if _inferhaven_owns_port "$PORT"; then
-        echo -e "  Port ${PORT} (${NAME}): ${GREEN}✓${NC} in use by InferHaven"
+        echo -e "  Port ${PORT} (${NAME}): ${GREEN}✓${NC} in use by Bulkhead"
       else
         echo -e "  Port ${PORT} (${NAME}): ${YELLOW}⚠ in use by another process${NC}"
         echo -e "                     Change ${NAME}_PORT in .env or stop the conflicting service"
@@ -574,11 +574,11 @@ cmd_doctor() {
   echo ""
   echo "  ────────────────────────────────────────"
   if [ "$ISSUES" -eq 0 ]; then
-    echo -e "  ${GREEN}✓ All checks passed. InferHaven is ready.${NC}"
+    echo -e "  ${GREEN}✓ All checks passed. Bulkhead is ready.${NC}"
   elif [ "$ISSUES" -le 2 ]; then
     echo -e "  ${YELLOW}⚠ ${ISSUES} minor issue(s) found. See above for details.${NC}"
   else
-    echo -e "  ${RED}✗ ${ISSUES} issue(s) found. Fix them before running InferHaven.${NC}"
+    echo -e "  ${RED}✗ ${ISSUES} issue(s) found. Fix them before running Bulkhead.${NC}"
   fi
   echo ""
 }

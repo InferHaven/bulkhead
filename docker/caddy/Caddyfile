@@ -1,4 +1,4 @@
-# InferHaven — Caddy Reverse Proxy Configuration (reference)
+# Bulkhead — Caddy Reverse Proxy Configuration (reference)
 #
 # This file is NOT used directly at runtime. The actual Caddyfile is generated
 # by docker/caddy/entrypoint.sh based on DOMAIN, TLS_MODE, and ALLOWED_IPS.

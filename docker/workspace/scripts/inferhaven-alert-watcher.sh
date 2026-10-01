@@ -3,7 +3,7 @@
 # SC2012: alert filenames are controlled timestamps; ls + wc/sort is fine.
 # SC2015: `A && B || true` is the deliberate non-fatal idiom in this file.
 ###############################################################################
-# InferHaven Alert Watcher — background daemon
+# Bulkhead Alert Watcher — background daemon
 #
 # Two monitoring paths run concurrently:
 #

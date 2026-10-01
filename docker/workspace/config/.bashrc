@@ -1,4 +1,4 @@
-# InferHaven Workspace — Bash Configuration
+# Bulkhead Workspace — Bash Configuration
 # Loaded for interactive bash sessions (web IDE terminal, fallback shells).
 # Primary login shell is zsh — this covers any bash usage.
 
@@ -10,14 +10,14 @@ export TERM="${TERM:-xterm-256color}"
 export COLORTERM="${COLORTERM:-truecolor}"
 
 # ── Color prompt ──────────────────────────────────────────────────────────────
-# cyan "InferHaven" prefix, blue working directory
-PS1='\[\033[01;36m\]InferHaven\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+# cyan "Bulkhead" prefix, blue working directory
+PS1='\[\033[01;36m\]Bulkhead\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 
 # ── Terminal title ────────────────────────────────────────────────────────────
-# Sets tab/window title to "InferHaven | ~/current/path" on every prompt.
+# Sets tab/window title to "Bulkhead | ~/current/path" on every prompt.
 _ih_set_title() {
   local dir="${PWD/#$HOME/\~}"
-  printf '\033]0;InferHaven | %s\007' "$dir"
+  printf '\033]0;Bulkhead | %s\007' "$dir"
 }
 PROMPT_COMMAND="_ih_set_title${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
 
@@ -61,7 +61,7 @@ fi
 
 # ── Starship prompt ───────────────────────────────────────────────────────────
 # Replaces the PS1 above when INSTALL_STARSHIP=1 (default). Set INSTALL_STARSHIP=0
-# in .env to keep the plain InferHaven PS1 instead.
+# in .env to keep the plain Bulkhead PS1 instead.
 if [ "${INSTALL_STARSHIP:-1}" != "0" ] && command -v starship > /dev/null 2>&1; then
   eval "$(starship init bash)"
 fi

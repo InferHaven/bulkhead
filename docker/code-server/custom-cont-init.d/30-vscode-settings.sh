@@ -4,7 +4,7 @@
 # Idempotent: never overwrites settings.json once created, so user
 # customizations made in VS Code are preserved across container restarts.
 BOOT_MODE=$([ -f /config/.haven/.code-server-initialized ] && echo warm || echo cold)
-echo "InferHaven: ${0##*/} (${BOOT_MODE} boot)"
+echo "Bulkhead: ${0##*/} (${BOOT_MODE} boot)"
 
 # ── User settings (code_server_data volume) ──────────────────────────────────
 SETTINGS_DIR="/config/data/User"

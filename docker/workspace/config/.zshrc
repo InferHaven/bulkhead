@@ -1,6 +1,6 @@
-# InferHaven Workspace — Zsh Configuration
+# Bulkhead Workspace — Zsh Configuration
 
-# ── InferHaven environment (load first — INSTALL_STARSHIP and API keys needed) ──
+# ── Bulkhead environment (load first — INSTALL_STARSHIP and API keys needed) ──
 # Source API keys, OLLAMA_HOST, INSTALL_STARSHIP, and tool paths set by
 # configure-assistants.sh. Loaded before ZSH_THEME so INSTALL_STARSHIP is
 # available when deciding whether to use Starship or Oh My Zsh.
@@ -35,12 +35,12 @@ export EDITOR="nvim"
 export PREFIX="$HOME/.local"   # make install target — stays in home volume
 
 # ── Terminal title ───────────────────────────────────────────────────────────
-# Sets the tab/window title to "InferHaven | ~/current/path" so terminal apps
+# Sets the tab/window title to "Bulkhead | ~/current/path" so terminal apps
 # show a meaningful name instead of a blank tab.
 # add-zsh-hook stacks cleanly with Oh My Zsh's own hooks.
 _ih_set_title() {
   local dir="${PWD/#$HOME/\~}"
-  print -Pn "\033]0;InferHaven | ${dir}\007"
+  print -Pn "\033]0;Bulkhead | ${dir}\007"
 }
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd  _ih_set_title
@@ -54,7 +54,7 @@ alias g="git"
 alias dc="docker compose"
 alias k="kubectl"
 
-# InferHaven AI shortcuts
+# Bulkhead AI shortcuts
 alias ai-models="curl -s \${OLLAMA_HOST}/api/tags | jq -r '.models[].name'"
 alias ai-status="curl -sf \${OLLAMA_HOST}/api/tags > /dev/null && echo '✓ Ollama running' || echo '✗ Ollama not reachable'"
 
@@ -83,7 +83,7 @@ fi
 if [ -z "$TMUX" ] && [ "$TERM_PROGRAM" != "vscode" ]; then
   echo ""
   echo "  ╔══════════════════════════════════════════╗"
-  echo "  ║         Welcome to InferHaven            ║"
+  echo "  ║         Welcome to Bulkhead              ║"
   echo "  ║      A safe haven for AI inference       ║"
   echo "  ╚══════════════════════════════════════════╝"
   echo ""

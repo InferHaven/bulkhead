@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-# InferHaven — Devcontainer Post-Create Setup
+# Bulkhead — Devcontainer Post-Create Setup
 #
 # Runs after the devcontainer is created in any conformant client (GitHub
 # Codespaces, VS Code Dev Containers, DevPod, JetBrains Gateway, or headless
@@ -9,7 +9,7 @@
 # Flavor selection (env DEVCONTAINER_FLAVOR, set by each devcontainer.json):
 #   codespaces   — slim stack (ollama + workspace), CPU-only, default.
 #   full-stack   — full prod stack (ollama + workspace + code-server + caddy).
-#   nested       — running inside an outer InferHaven workspace.
+#   nested       — running inside an outer Bulkhead workspace.
 ###############################################################################
 set -e
 
@@ -26,7 +26,7 @@ esac
 
 echo ""
 echo "  ╔══════════════════════════════════════════╗"
-echo "  ║         Welcome to InferHaven            ║"
+echo "  ║         Welcome to Bulkhead              ║"
 echo "  ║      A safe haven for AI inference       ║"
 printf  "  ║%*s║\n" 42 ""
 printf  "  ║   Devcontainer flavor: %-18s║\n" "$FLAVOR"
@@ -123,30 +123,30 @@ curl -s http://ollama:11434/api/tags 2>/dev/null \
 
 # ── Instructions ─────────────────────────────────────────────────────────────
 echo ""
-echo "  ┌─────────────────────────────────────────────────────────────┐"
-echo "  │  InferHaven is ready. Here's how to use it:                 │"
-echo "  │                                                             │"
-echo "  │  AI coding (opencode — terminal-first, local-tuned):        │"
-echo "  │    opencode          — interactive TUI                      │"
-echo "  │    opencode --help   — see all commands                     │"
-echo "  │                                                             │"
-echo "  │  CLI helpers (in terminal):                                 │"
+echo "  ┌────────────────────────────────────────────────────────────────┐"
+echo "  │  Bulkhead is ready. Here's how to use it:                      │"
+echo "  │                                                                │"
+echo "  │  AI coding (opencode — terminal-first, local-tuned):           │"
+echo "  │    opencode          — interactive TUI                         │"
+echo "  │    opencode --help   — see all commands                        │"
+echo "  │                                                                │"
+echo "  │  CLI helpers (in terminal):                                    │"
 echo "  │    bulkhead models  — list downloaded models                   │"
 echo "  │    bulkhead status  — check Ollama connection                  │"
 echo "  │    bulkhead tmux    — attach to persistent tmux session        │"
 echo "  │    bulkhead sync    — re-render assistant configs from models  │"
 if [ "$FLAVOR" = "full-stack" ]; then
-echo "  │                                                             │"
-echo "  │  Full-stack extras (forwarded via devcontainer):            │"
-echo "  │    code-server   — web IDE (forwarded port 8443)            │"
-echo "  │    Caddy         — reverse proxy + status (port 80)         │"
+echo "  │                                                                │"
+echo "  │  Full-stack extras (forwarded via devcontainer):               │"
+echo "  │    code-server   — web IDE (forwarded port 8443)               │"
+echo "  │    Caddy         — reverse proxy + status (port 80)            │"
 fi
-echo "  │                                                             │"
-echo "  │  Ollama API (OpenAI-compatible):                            │"
-echo "  │    http://ollama:11434  (from inside devcontainer)          │"
-echo "  │    http://localhost:11434  (forwarded port from host)       │"
-echo "  │                                                             │"
-echo "  │  Want GPU-powered AI with larger models?                    │"
-echo "  │    https://inferhaven.com/trial                             │"
-echo "  └─────────────────────────────────────────────────────────────┘"
+echo "  │                                                                │"
+echo "  │  Ollama API (OpenAI-compatible):                               │"
+echo "  │    http://ollama:11434  (from inside devcontainer)             │"
+echo "  │    http://localhost:11434  (forwarded port from host)          │"
+echo "  │                                                                │"
+echo "  │  Want GPU-powered AI with larger models?                       │"
+echo "  │    https://inferhaven.com/trial                                │"
+echo "  └────────────────────────────────────────────────────────────────┘"
 echo ""

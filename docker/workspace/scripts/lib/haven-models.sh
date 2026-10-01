@@ -2,7 +2,7 @@
 # shellcheck disable=SC2015,SC2016
 # SC2015: `curl && mv || true` is the deliberate non-fatal cache-fill idiom.
 # SC2016: xargs bash -c '...' body keeps $vars literal for the spawned shell.
-# InferHaven model-cache helpers.
+# Bulkhead model-cache helpers.
 # Eliminates the N+1 curl pattern across 7 sync functions + status scripts.
 #
 # /run is tmpfs in the container — cache resets every container restart, so

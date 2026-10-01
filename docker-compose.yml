@@ -1,5 +1,5 @@
 ###############################################################################
-# InferHaven Core — Docker Compose Stack
+# Bulkhead — Docker Compose Stack
 # A plug-and-play private AI coding server.
 #
 # Usage:
@@ -77,10 +77,10 @@ services:
         ollama serve &
         pid=$$!
         until ollama list >/dev/null 2>&1; do sleep 1; done
-        echo "InferHaven: Pulling $$DEFAULT_MODEL..."
+        echo "Bulkhead: Pulling $$DEFAULT_MODEL..."
         ollama pull "$$DEFAULT_MODEL" \
-          && echo "InferHaven: Model $$DEFAULT_MODEL ready." \
-          || echo "InferHaven: Pull failed — server still running." >&2
+          && echo "Bulkhead: Model $$DEFAULT_MODEL ready." \
+          || echo "Bulkhead: Pull failed — server still running." >&2
         wait $$pid
     networks:
       - inferhaven
@@ -267,9 +267,9 @@ services:
       - inferhaven
 
   # ─────────────────────────────────────────────────────────────────────────
-  # Haven Agent — InferHaven Cloud Connector (optional)
+  # Haven Agent — Bulkhead Cloud Connector (optional)
   #
-  # Maintains an outbound WebSocket connection to the InferHaven Cloud relay
+  # Maintains an outbound WebSocket connection to the Bulkhead Cloud relay
   # so the dashboard can manage this server remotely (models, SSH keys,
   # metrics, logs). Zero impact on self-hosted setups — the service only
   # starts when the `cloud` Docker Compose profile is active.

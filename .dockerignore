@@ -1,4 +1,4 @@
-# InferHaven build context excludes — secrets, VCS, transient artifacts.
+# Bulkhead build context excludes — secrets, VCS, transient artifacts.
 #
 # Most relevant: keep .env out of the workspace image. The image is built by
 # every devcontainer client + CI; baking a contributor's .env into a layer

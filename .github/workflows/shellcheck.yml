@@ -1,7 +1,7 @@
 ###############################################################################
 # Shellcheck lint gate
 #
-# InferHaven Core is mostly Bash, so a static lint gate is the cheapest way to
+# Bulkhead is mostly Bash, so a static lint gate is the cheapest way to
 # stop shellcheck regressions landing. Runs the SAME invocation contributors run
 # locally — `shellcheck $(git ls-files '*.sh')` at default (strictest) severity —
 # against a pinned shellcheck so a runner-image bump can never silently change

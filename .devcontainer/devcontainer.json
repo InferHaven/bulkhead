@@ -7,7 +7,7 @@
   // expect context = ./docker/workspace, so the build fails with
   // `"/config/...": not found` for every COPY. Tracked in
   // /root/.claude/plans/elegant-conjuring-deer.md Phase A.
-  "name": "InferHaven Core",
+  "name": "Bulkhead",
   "dockerComposeFile": "../docker-compose.codespaces.yml",
   "service": "workspace",
   "workspaceFolder": "/home/haven/projects/inferhaven-core",

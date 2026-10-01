@@ -4,7 +4,7 @@
 # SC2016: fzf --preview body keeps $vars literal so they expand inside the
 #   preview subshell, not here.
 ###############################################################################
-# InferHaven alerts popup
+# Bulkhead alerts popup
 #
 # Called by inferhaven-right-popup when undismissed alert files exist in
 # ~/.haven/alerts/. Shows alerts sorted newest-first in an fzf multi-select
@@ -253,7 +253,7 @@ if command -v fzf > /dev/null 2>&1; then
 # ── Fallback: plain list ──────────────────────────────────────────────────────
 else
     echo ""
-    echo "  ⚠  InferHaven Alerts (${_display_total} total)"
+    echo "  ⚠  Bulkhead Alerts (${_display_total} total)"
     echo "  $(printf '─%.0s' {1..60})"
     echo ""
 

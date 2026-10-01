@@ -1,5 +1,5 @@
 ###############################################################################
-# InferHaven Core — GitHub Codespaces Compose
+# Bulkhead — GitHub Codespaces Compose
 #
 # Slimmed-down stack for running inside GitHub Codespaces.
 # No GPU (Codespaces doesn't support it), no Caddy (Codespaces handles
@@ -50,15 +50,15 @@ services:
     restart: "no"
     entrypoint: >
       sh -c '
-        echo "InferHaven: Pulling qwen3:4b-instruct-2507 for Codespaces (CPU-optimized, ~2 GB)..."
+        echo "Bulkhead: Pulling qwen3:4b-instruct-2507 for Codespaces (CPU-optimized, ~2 GB)..."
         if curl -f http://ollama:11434/api/pull \
              -H "Content-Type: application/json" \
              -d "{\"name\": \"qwen3:4b-instruct-2507-q4_K_M\"}" 2>&1; then
           echo ""
-          echo "InferHaven: qwen3:4b-instruct-2507-q4_K_M ready."
+          echo "Bulkhead: qwen3:4b-instruct-2507-q4_K_M ready."
         else
           echo ""
-          echo "InferHaven: ERROR — model pull failed. Check ollama logs: docker logs inferhaven-ollama"
+          echo "Bulkhead: ERROR — model pull failed. Check ollama logs: docker logs inferhaven-ollama"
           exit 1
         fi
       '

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###############################################################################
-# InferHaven Workspace — Coding Assistant Installer
+# Bulkhead Workspace — Coding Assistant Installer
 #
 # Runs in the background at container start (spawned from entrypoint.sh).
 # Installs coding assistant harnesses listed in INSTALL_ASSISTANTS.
@@ -323,7 +323,7 @@ for raw_tool in "${TOOLS[@]}"; do
             ;;
 
         continue|continue-code|continuecode|continue-extension)
-            # InferHaven installs the `cn` CLI in the workspace and maintains
+            # Bulkhead installs the `cn` CLI in the workspace and maintains
             # ~/.continue/config.yaml for it. The code-server browser editor is
             # NOT touched — users who want the Continue extension install it
             # themselves via code-server's Extensions panel. See docs/ide/continue.md.

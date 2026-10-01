@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-# InferHaven — Add SSH Key Helper
+# Bulkhead — Add SSH Key Helper
 # Usage: add-ssh-key "ssh-ed25519 AAAA... user@host"
 #    or: add-ssh-key < ~/.ssh/id_ed25519.pub
 ###############################################################################

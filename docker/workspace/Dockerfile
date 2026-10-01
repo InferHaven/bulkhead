@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 ###############################################################################
-# InferHaven Workspace — Terminal-First Dev Environment
+# Bulkhead Workspace — Terminal-First Dev Environment
 #
 # Ubuntu-based container with:
 #   - SSH server, mosh, tmux, zsh, neovim, git + git-delta + lazygit
@@ -191,7 +191,7 @@ RUN npm install -g @devcontainers/cli \
 # this with the real wrapper.
 RUN printf '%s\n' \
         '#!/bin/sh' \
-        '# InferHaven no-op stub — see docker/workspace/Dockerfile.' \
+        '# Bulkhead no-op stub — see docker/workspace/Dockerfile.' \
         'case "$1" in' \
         '  get)   read REG; printf "{\"ServerURL\":\"%s\",\"Username\":\"\",\"Secret\":\"\"}\n" "$REG" ;;' \
         '  store) cat >/dev/null ;;' \
@@ -266,12 +266,12 @@ RUN ln -sf /usr/bin/fdfind /usr/local/bin/fd \
 # Keeping all three in sync — single source of truth for the same path list.
 ENV PATH="/home/haven/.npm-global/bin:/home/haven/.local/bin:/home/haven/.opencode/bin:/home/haven/.local/share/mise/shims:/home/haven/.cargo/bin:/home/haven/go/bin:/usr/local/go/bin:${PATH}"
 RUN printf '%s\n' \
-      '# InferHaven: user tool paths' \
+      '# Bulkhead: user tool paths' \
       'export PATH="/home/haven/.npm-global/bin:/home/haven/.local/bin:/home/haven/.opencode/bin:/home/haven/.local/share/mise/shims:/home/haven/.cargo/bin:/home/haven/go/bin:/usr/local/go/bin:${PATH}"' \
       > /etc/profile.d/haven-path.sh \
     && mkdir -p /etc/zsh \
     && printf '%s\n' \
-      '# InferHaven: user tool paths — loaded for every zsh instance' \
+      '# Bulkhead: user tool paths — loaded for every zsh instance' \
       'typeset -U path 2>/dev/null || true' \
       'path=("/home/haven/.npm-global/bin" "/home/haven/.local/bin" "/home/haven/.opencode/bin" "/home/haven/.local/share/mise/shims" "/home/haven/.cargo/bin" "/home/haven/go/bin" "/usr/local/go/bin" $path)' \
       'export PATH' \

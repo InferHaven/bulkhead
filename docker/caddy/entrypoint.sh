@@ -18,12 +18,12 @@ exec 2>&1
 # someone re-added a bind-mount override that failed silently — fail loud.
 for _f in /entrypoint.sh /etc/caddy/ide.html.template /srv/status.html /srv/denied.html; do
     if [ ! -s "$_f" ]; then
-        echo "InferHaven: FATAL — $_f is missing or empty." >&2
-        echo "InferHaven:   In nested compose this usually means a relative-path bind" >&2
-        echo "InferHaven:   resolved to an inner path the host daemon can't see." >&2
-        echo "InferHaven:   Round 5 ships caddy as inferhaven/caddy:local with these" >&2
-        echo "InferHaven:   files baked in — make sure your compose isn't binding them" >&2
-        echo "InferHaven:   from ./docker/caddy/*. Rebuild with 'docker compose build caddy'." >&2
+        echo "Bulkhead: FATAL — $_f is missing or empty." >&2
+        echo "Bulkhead:   In nested compose this usually means a relative-path bind" >&2
+        echo "Bulkhead:   resolved to an inner path the host daemon can't see." >&2
+        echo "Bulkhead:   Round 5 ships caddy as inferhaven/caddy:local with these" >&2
+        echo "Bulkhead:   files baked in — make sure your compose isn't binding them" >&2
+        echo "Bulkhead:   from ./docker/caddy/*. Rebuild with 'docker compose build caddy'." >&2
         exit 1
     fi
 done
@@ -87,17 +87,17 @@ if [ -n "$ALLOWED_IPS" ]; then
     DOCKER_GW=$(ip route show 2>/dev/null | awk '/^default/ {print $3; exit}')
     if [ -n "$DOCKER_GW" ]; then
         ALLOWED_IPS="${ALLOWED_IPS} ${DOCKER_GW}/32"
-        echo "InferHaven: Docker gateway ${DOCKER_GW} auto-added to allowlist for localhost access"
+        echo "Bulkhead: Docker gateway ${DOCKER_GW} auto-added to allowlist for localhost access"
     fi
 fi
 ALLOWED_CIDRS="${ALLOWED_IPS:-0.0.0.0/0 ::/0}"
 
-echo "InferHaven: Caddy starting — domain=${DOMAIN} tls=${TLS_MODE} allowed_ips=${ALLOWED_IPS:-all}"
+echo "Bulkhead: Caddy starting — domain=${DOMAIN} tls=${TLS_MODE} allowed_ips=${ALLOWED_IPS:-all}"
 
 if [ "$TLS_MODE" = "internal" ]; then
-    echo "InferHaven: Using self-signed TLS. To trust the cert, import the Caddy root CA:"
-    echo "InferHaven:   docker cp inferhaven-caddy:/data/caddy/pki/authorities/local/root.crt ./caddy-root.crt"
-    echo "InferHaven:   Then add caddy-root.crt to your browser or OS trust store."
+    echo "Bulkhead: Using self-signed TLS. To trust the cert, import the Caddy root CA:"
+    echo "Bulkhead:   docker cp inferhaven-caddy:/data/caddy/pki/authorities/local/root.crt ./caddy-root.crt"
+    echo "Bulkhead:   Then add caddy-root.crt to your browser or OS trust store."
 fi
 
 # Write startup timestamp so the status page can calculate true stack uptime.
@@ -112,9 +112,9 @@ if [ -f /etc/caddy/ide.html.template ]; then
     # Use a sed delimiter that cannot appear in a unix path (|) and escape | in the value.
     _ws_escaped=$(printf '%s' "$DEFAULT_WORKSPACE" | sed 's/|/\\|/g')
     sed "s|__WORKSPACE__|${_ws_escaped}|g" /etc/caddy/ide.html.template > /srv/ide.html
-    echo "InferHaven: ide.html rendered with workspace=${DEFAULT_WORKSPACE}"
+    echo "Bulkhead: ide.html rendered with workspace=${DEFAULT_WORKSPACE}"
 else
-    echo "InferHaven: WARNING — /etc/caddy/ide.html.template not mounted; /ide redirect will not work"
+    echo "Bulkhead: WARNING — /etc/caddy/ide.html.template not mounted; /ide redirect will not work"
 fi
 
 cat > /etc/caddy/Caddyfile <<CADDYEOF

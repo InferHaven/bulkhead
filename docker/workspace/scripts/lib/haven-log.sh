@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# InferHaven shared log helpers — sourced by other scripts.
+# Bulkhead shared log helpers — sourced by other scripts.
 # Provides log() and log_private() with consistent timestamp + tag.
 # Caller must set HAVEN_LOG (path to log file). Falls back to /dev/null.
 

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.6
 #
-# InferHaven custom code-server image
+# Bulkhead custom code-server image
 #
 # Bakes our custom-cont-init.d/ scripts into the linuxserver/code-server image
 # instead of binding them at runtime. Same reason as docker/caddy/Dockerfile:

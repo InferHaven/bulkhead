@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# InferHaven log rotation — runs daily via supercronic (as haven user).
+# Bulkhead log rotation — runs daily via supercronic (as haven user).
 # Caps log files at sane sizes, keeps a few rotated copies, evicts old alerts/downloads.
 # Resolves user homes via getent so sudo-invocations don't write to /root.
 set -uo pipefail

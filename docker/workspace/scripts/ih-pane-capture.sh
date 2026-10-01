@@ -34,7 +34,7 @@ tmux list-panes -a \
     2>/dev/null | \
 while IFS='|' read -r sess win pane left top ppid cmd; do
     # Skip ephemeral popup sessions (haven-popup-*) — these are created by
-    # InferHaven's status bar popups and should never be saved or restored.
+    # Bulkhead's status bar popups and should never be saved or restored.
     case "${sess}" in haven-popup-*) continue ;; esac
 
     # Position-based key: immune to pane ID reordering after resurrect restore

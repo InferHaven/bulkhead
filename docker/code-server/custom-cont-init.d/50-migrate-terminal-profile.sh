@@ -3,7 +3,7 @@
 # Runs on every code-server start; no-ops if the profile is already present.
 # Uses only coreutils (head, sed, tail, grep) — no python, node, or jq needed.
 BOOT_MODE=$([ -f /config/.haven/.code-server-initialized ] && echo warm || echo cold)
-echo "InferHaven: ${0##*/} (${BOOT_MODE} boot)"
+echo "Bulkhead: ${0##*/} (${BOOT_MODE} boot)"
 
 SETTINGS_FILE="/config/data/User/settings.json"
 [ -f "${SETTINGS_FILE}" ] || exit 0

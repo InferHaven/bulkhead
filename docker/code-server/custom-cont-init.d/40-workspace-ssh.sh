@@ -5,7 +5,7 @@
 set -e
 
 BOOT_MODE=$([ -f /config/.haven/.code-server-initialized ] && echo warm || echo cold)
-echo "InferHaven: ${0##*/} (${BOOT_MODE} boot)"
+echo "Bulkhead: ${0##*/} (${BOOT_MODE} boot)"
 
 CS_SSH_DIR="/config/.ssh"
 CS_PRIVKEY="${CS_SSH_DIR}/code-server-workspace"

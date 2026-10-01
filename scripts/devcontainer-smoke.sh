@@ -3,7 +3,7 @@
 # SC2015: `test && pass || fail` is the deliberate assertion idiom — pass/fail
 #   are local helpers that always return 0, so this IS safe if-then-else.
 ###############################################################################
-# InferHaven — Devcontainer Smoke Test
+# Bulkhead — Devcontainer Smoke Test
 #
 # Runs INSIDE the workspace container after `devcontainer up` (or after the
 # Codespaces / VS Code Dev Containers / DevPod / JetBrains UI has finished
@@ -63,7 +63,7 @@ wait_for() {
   done
 }
 
-printf "\n\033[1mInferHaven devcontainer smoke — flavor: %s\033[0m\n" "$FLAVOR"
+printf "\n\033[1mBulkhead devcontainer smoke — flavor: %s\033[0m\n" "$FLAVOR"
 
 # ─────────────────────────────────────────────────────────────────────────────
 hdr "Identity & workspace"

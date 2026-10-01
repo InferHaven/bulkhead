@@ -1,10 +1,10 @@
-# InferHaven — Starship prompt configuration
+# Bulkhead — Starship prompt configuration
 #
 # Tailored for AI-assisted coding workflows.
 # Requires a Nerd Font in your terminal emulator (client-side) for icons.
 # Recommended: JetBrains Mono Nerd Font — https://www.nerdfonts.com
 #
-# Customise freely — InferHaven never overwrites this file after first start.
+# Customise freely — Bulkhead never overwrites this file after first start.
 
 # Two-line prompt: info on line 1, cursor on line 2.
 # Badge: shield-home icon (󰚊 nf-md-shield_home) + "IH" in bold dark cyan.

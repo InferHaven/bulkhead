@@ -82,5 +82,9 @@ DOCS=("${ROOT}/README.md" "${ROOT}/CONTRIBUTING.md" "${ROOT}/SECURITY.md" "${ROO
 check "the docs name the command bulkhead" "" \
   "$(grep -rnE "(^|[^a-zA-Z0-9_./-])haven (${SUBCOMMANDS})([^a-z-]|$)|\./scripts/haven\b" "${DOCS[@]}" || true)"
 
+# The product's old names stay only in the README's note for people who knew them.
+check "no 'InferHaven Core' or 'InferHaven Cloud' outside the README's rename note" "" \
+  "$(git -C "${ROOT}" grep -nE 'InferHaven (Core|Cloud)' -- . ':!LICENSE' ':!scripts/tests/cli-names.sh' | grep -v '^README.md:[0-9]*:> This project was previously called' || true)"
+
 echo "cli-names: ${PASS} passed, ${FAIL} failed"
 [ "${FAIL}" -eq 0 ]

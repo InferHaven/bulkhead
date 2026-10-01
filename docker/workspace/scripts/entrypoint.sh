@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-# InferHaven Workspace — Entrypoint Script
+# Bulkhead Workspace — Entrypoint Script
 # Sets up SSH keys, user environment, supercronic, and starts the SSH server.
 ###############################################################################
 set -e
@@ -95,7 +95,7 @@ fi
 BASH_PROFILE="${HOME_DIR}/.bash_profile"
 if ! grep -q 'inferhaven' "${BASH_PROFILE}" 2>/dev/null; then
   cat > "${BASH_PROFILE}" << 'BASH_PROFILE_CONTENT'
-# InferHaven Workspace — Bash Login Profile
+# Bulkhead Workspace — Bash Login Profile
 [ -f ~/.inferhaven ] && . ~/.inferhaven
 BASH_PROFILE_CONTENT
   chown "${HAVEN_USER}:${HAVEN_USER}" "${BASH_PROFILE}"
@@ -104,7 +104,7 @@ fi
 ZPROFILE="${HOME_DIR}/.zprofile"
 if ! grep -q 'inferhaven' "${ZPROFILE}" 2>/dev/null; then
   cat > "${ZPROFILE}" << 'ZPROFILE_CONTENT'
-# InferHaven Workspace — Zsh Login Profile
+# Bulkhead Workspace — Zsh Login Profile
 [[ -f ~/.inferhaven ]] && source ~/.inferhaven
 ZPROFILE_CONTENT
   chown "${HAVEN_USER}:${HAVEN_USER}" "${ZPROFILE}"
@@ -180,7 +180,7 @@ _provision_extra_user() (
 
   if [ ! -f "${home}/.inferhaven" ]; then
     cat > "${home}/.inferhaven" << EOF
-# InferHaven environment (extra user: ${user})
+# Bulkhead environment (extra user: ${user})
 export OLLAMA_HOST="${OLLAMA_HOST:-http://ollama:11434}"
 export INFERHAVEN_VERSION="0.1.0"
 EOF
@@ -383,7 +383,7 @@ chown "${HAVEN_USER}:${HAVEN_USER}" "${TMUX_BOOT_LOG}" 2>/dev/null || true
     # back the terminal output you were looking at, not just the layout.
     tmux set-option -g @resurrect-capture-pane-contents 'on' 2>/dev/null || true
     # Restart foreground programs (vim, nvim, less, top, htop, btop, plus the
-    # InferHaven coding agents) when restoring. Anything not on this list is
+    # Bulkhead coding agents) when restoring. Anything not on this list is
     # left exited; tmux-resurrect default whitelist is too small for our use.
     tmux set-option -g @resurrect-processes \
         '\"~vim\" \"~nvim\" \"~emacs\" \"~less\" \"~more\" \"~man\" \"~tail\" \"~top\" \"~htop\" \"~btop\" \"~node\" \"~python\" \"~goose\" \"~claude\" \"~opencode\" \"~aider\" \"~qwen\" \"~pi\" \"~cn\" \"~gemini\"' \
