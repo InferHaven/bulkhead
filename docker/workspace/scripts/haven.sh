@@ -11,7 +11,7 @@
 ###############################################################################
 set -e
 
-VERSION="0.1.0"
+VERSION="0.2.0"
 OLLAMA_URL="${OLLAMA_HOST:-http://ollama:11434}"
 COMPOSE_FILE="${INFERHAVEN_DIR:-/opt/inferhaven}/docker-compose.yml"
 

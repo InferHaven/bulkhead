@@ -32,7 +32,7 @@ trap 'rm -rf "${TMP}"' EXIT
 # ── Host: all three names run the same CLI ───────────────────────────────────
 for name in bulkhead bh haven; do
   out="$("${ROOT}/scripts/${name}" version 2>"${TMP}/err")"
-  check "host ${name}: version" "Bulkhead v0.1.0" "${out}"
+  check "host ${name}: version" "Bulkhead v0.2.0" "${out}"
 done
 "${ROOT}/scripts/bulkhead" version 2>"${TMP}/err" >/dev/null
 check "host bulkhead: stderr stays empty" "" "$(cat "${TMP}/err")"
@@ -100,6 +100,17 @@ check "nothing calls the product inferhaven-core" "" \
 # shellcheck disable=SC2016  # the backticks are literal Markdown, matched as text
 check "the docs call the CLI bulkhead" "" \
   "$(grep -rnE '`haven` CLI|CLI \(`haven`\)|file `haven` writes' "${DOCS[@]}" || true)"
+
+# ── One version, stated the same everywhere ──────────────────────────────────
+V="$(sed -n 's/^VERSION="\(.*\)"$/\1/p' "${ROOT}/scripts/bulkhead")"
+check "the workspace CLI states the host CLI's version" "VERSION=\"${V}\"" \
+  "$(grep -m1 '^VERSION=' "${ROOT}/docker/workspace/scripts/haven.sh")"
+check "the entrypoint states the host CLI's version" "export INFERHAVEN_VERSION=\"${V}\"" \
+  "$(grep -m1 '^export INFERHAVEN_VERSION=' "${ROOT}/docker/workspace/scripts/entrypoint.sh")"
+check "the assistants' environment states the host CLI's version" "1" \
+  "$(grep -cE "^set_inferhaven_var \"INFERHAVEN_VERSION\" +\"${V//./\\.}\"$" "${ROOT}/docker/workspace/scripts/configure-assistants.sh")"
+check "the status page states the host CLI's version" "1" \
+  "$(grep -cE "<span class=\"value muted\">${V//./\\.}</span>" "${ROOT}/docker/caddy/status.html")"
 
 echo "cli-names: ${PASS} passed, ${FAIL} failed"
 [ "${FAIL}" -eq 0 ]
